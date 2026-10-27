@@ -15,10 +15,10 @@ globalThis.SFX = {};
 const src = [
   fs.readFileSync(path.join(__dirname, '../js/data.js'), 'utf8'),
   fs.readFileSync(path.join(__dirname, '../js/game.js'), 'utf8'),
-  '\n;globalThis.__NCT = { Game, Save, LEVELS, MEMBERS, avatarSVG, memberByType, PHRASES, ACHIEVEMENTS, djb2Hash, mulberry32, todayKey, I18N, t, tf, memberFun, achName, achDesc };'
+  '\n;globalThis.__NCT = { Game, Save, LEVELS, MEMBERS, avatarSVG, memberByType, PHRASES, ACHIEVEMENTS, djb2Hash, mulberry32, todayKey, I18N, t, tf, memberFun, achName, achDesc, ERAS, ERA_ACC, eraOfBoard };'
 ].join('\n');
 vm.runInThisContext(src, { filename: 'game-bundle.js' });
-const { Game, Save, LEVELS, MEMBERS, avatarSVG, memberByType, PHRASES, ACHIEVEMENTS, djb2Hash, mulberry32, todayKey, I18N, t, tf, memberFun, achName, achDesc } = globalThis.__NCT;
+const { Game, Save, LEVELS, MEMBERS, avatarSVG, memberByType, PHRASES, ACHIEVEMENTS, djb2Hash, mulberry32, todayKey, I18N, t, tf, memberFun, achName, achDesc, ERAS, ERA_ACC, eraOfBoard } = globalThis.__NCT;
 
 let failures = 0;
 const check = (name, cond, extra) => {
@@ -305,6 +305,37 @@ console.log('--- 成就与存档 ---');
     check('成就英文表覆盖全部 id', ACHIEVEMENTS.every(a => achDesc(a) !== a.desc));
     Save.data.settings.lang = 'zh';
     check('切回中文', t('winTitle') === '关卡完成！');
+  }
+
+  /* ---------- 8. 时代装扮 ---------- */
+  console.log('--- 时代装扮 ---');
+  {
+    check('每个关卡都有装扮', LEVELS.every(L => L.era && ERAS[L.era]));
+    check('每个装扮都有配饰 SVG', Object.keys(ERAS).every(id => typeof ERA_ACC[id] === 'string' && ERA_ACC[id].length > 10));
+    check('装扮底色已定义', Object.values(ERAS).every(e => typeof e.bg === 'string' && e.bg.startsWith('linear-gradient')));
+    const plain = avatarSVG(MEMBERS[0], 60);
+    const gum = avatarSVG(MEMBERS[0], 60, 'gum');
+    const beatbox = avatarSVG(MEMBERS[2], 60, 'beatbox');
+    check('无装扮时头像不含配饰', !plain.includes('cy="73"') && plain.length < gum.length);
+    check('gum 装扮含泡泡', gum.includes('cx="50" cy="73"'));
+    check('beatbox 装扮含耳机', beatbox.includes('a23 23'));
+    check('不同装扮渲染不同', gum !== beatbox);
+
+    /* eraOfBoard：闯关跟随关卡；每日确定；无尽按轮轮换 */
+    Game.startClassic(0); Game.stopTimer();
+    check('闯关装扮 = 关卡设定', eraOfBoard() === 'gum');
+    Game.startClassic(9); Game.stopTimer();
+    check('第 10 关装扮 = beatbox', eraOfBoard() === 'beatbox');
+    Game.startDaily('2026-10-28'); Game.stopTimer();
+    const dEra1 = eraOfBoard();
+    Game.startDaily('2026-10-28'); Game.stopTimer();
+    check('每日装扮确定且可复现', dEra1 === eraOfBoard() && typeof dEra1 === 'string');
+    Game.startEndless(1); Game.stopTimer();
+    const e1 = eraOfBoard();
+    Game.startEndless(2); Game.stopTimer();
+    check('无尽装扮按轮轮换', eraOfBoard() !== e1);
+    Game.startEndless(1); Game.stopTimer();
+    check('无尽同轮装扮一致', eraOfBoard() === e1);
   }
 }
 

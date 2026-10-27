@@ -61,7 +61,7 @@ const UI = {
       if (el) el.textContent = t(map[id]);
     }
     const ver = document.getElementById('menu-version');
-    if (ver) ver.textContent = 'v2.0 · Made with 💚 for NCTzens';
+    if (ver) ver.textContent = 'v2.1 · Made with 💚 for NCTzens';
     this.renderMenuStats(); /* 每日按钮文案也依赖语言 */
   },
 
@@ -222,6 +222,8 @@ const UI = {
     board.style.gridTemplateColumns = `repeat(${C}, var(--cell))`;
     board.style.gridTemplateRows = `repeat(${R}, var(--cell))`;
 
+    const eraId = eraOfBoard();
+    const eraBg = eraId && ERAS[eraId] ? ERAS[eraId].bg : '';
     for (const t of Game.tiles) {
       const m = memberByType(t.type);
       const btn = document.createElement('button');
@@ -230,8 +232,9 @@ const UI = {
       btn.style.gridColumn = (t.c + 1);
       btn.style.setProperty('--mcolor', m.color);
       btn.style.setProperty('--mcolor-light', m.light);
+      if (eraBg) btn.style.setProperty('--era-bg', eraBg);
       btn.setAttribute('aria-label', m.cn + ' ' + m.name);
-      btn.innerHTML = `<span class="tile-inner">${avatarSVG(m, 60)}<span class="tile-name">${m.name}</span></span>`;
+      btn.innerHTML = `<span class="tile-inner">${avatarSVG(m, 60, eraId)}<span class="tile-name">${m.name}</span></span>`;
       btn.addEventListener('click', () => this.onTileClick(t));
       board.appendChild(btn);
       this.tileEls.set(t, btn);
@@ -262,14 +265,17 @@ const UI = {
   },
 
   refreshAllTiles() {
+    const eraId = eraOfBoard();
+    const eraBg = eraId && ERAS[eraId] ? ERAS[eraId].bg : '';
     for (const t of Game.tiles) {
       const el = this.tileEls.get(t);
       if (!el) continue;
       const m = memberByType(t.type);
       el.style.setProperty('--mcolor', m.color);
       el.style.setProperty('--mcolor-light', m.light);
+      if (eraBg) el.style.setProperty('--era-bg', eraBg);
       el.setAttribute('aria-label', m.cn + ' ' + m.name);
-      el.innerHTML = `<span class="tile-inner">${avatarSVG(m, 60)}<span class="tile-name">${m.name}</span></span>`;
+      el.innerHTML = `<span class="tile-inner">${avatarSVG(m, 60, eraId)}<span class="tile-name">${m.name}</span></span>`;
     }
     this.updateSelection();
   },

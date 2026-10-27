@@ -50,23 +50,70 @@ const MEMBERS = [
   }
 ];
 
-/* 关卡：以 Dream 的歌曲命名（rows=纵向格数, cols=横向格数, 单位：秒） */
+/* 关卡：以 Dream 的歌曲命名（rows=纵向格数, cols=横向格数, 单位：秒）
+ * era = 本关的时代装扮：成员头像配饰 + 卡片底色随歌曲主题变化 */
 const LEVELS = [
-  { song: 'Chewing Gum',      cn: '口香糖',      year: 2016, rows: 4, cols: 5,  time: 100 },
-  { song: 'My First and Last', cn: '最初到最后',  year: 2017, rows: 4, cols: 6,  time: 110 },
-  { song: 'We Young',         cn: '我们正年轻',   year: 2017, rows: 5, cols: 6,  time: 130 },
-  { song: 'We Go Up',         cn: '一路向上',     year: 2018, rows: 5, cols: 8,  time: 150 },
-  { song: 'Boom',             cn: '心动爆弹',     year: 2019, rows: 6, cols: 7,  time: 165 },
-  { song: "Ridin'",           cn: '驰行',        year: 2020, rows: 6, cols: 8,  time: 180 },
-  { song: 'Hot Sauce',        cn: '辣酱',        year: 2021, rows: 6, cols: 9,  time: 195 },
-  { song: 'Hello Future',     cn: '你好，未来',   year: 2021, rows: 6, cols: 10, time: 210 },
-  { song: 'Glitch Mode',      cn: '故障模式',     year: 2022, rows: 6, cols: 11, time: 225 },
-  { song: 'Beatbox',          cn: '节拍盒',      year: 2022, rows: 6, cols: 12, time: 240 },
-  { song: 'Candy',            cn: '糖果',        year: 2022, rows: 7, cols: 10, time: 255 },
-  { song: 'ISTJ',             cn: 'ISTJ',       year: 2023, rows: 8, cols: 11, time: 270 },
-  { song: 'Broken Melodies',  cn: '破碎的旋律',   year: 2023, rows: 7, cols: 12, time: 285 },
-  { song: 'Smoothie',         cn: '冰沙',        year: 2024, rows: 8, cols: 12, time: 300 }
+  { song: 'Chewing Gum',      cn: '口香糖',      year: 2016, rows: 4, cols: 5,  time: 100, era: 'gum' },
+  { song: 'My First and Last', cn: '最初到最后',  year: 2017, rows: 4, cols: 6,  time: 110, era: 'heart' },
+  { song: 'We Young',         cn: '我们正年轻',   year: 2017, rows: 5, cols: 6,  time: 130, era: 'young' },
+  { song: 'We Go Up',         cn: '一路向上',     year: 2018, rows: 5, cols: 8,  time: 150, era: 'goup' },
+  { song: 'Boom',             cn: '心动爆弹',     year: 2019, rows: 6, cols: 7,  time: 165, era: 'boom' },
+  { song: "Ridin'",           cn: '驰行',        year: 2020, rows: 6, cols: 8,  time: 180, era: 'rider' },
+  { song: 'Hot Sauce',        cn: '辣酱',        year: 2021, rows: 6, cols: 9,  time: 195, era: 'sauce' },
+  { song: 'Hello Future',     cn: '你好，未来',   year: 2021, rows: 6, cols: 10, time: 210, era: 'future' },
+  { song: 'Glitch Mode',      cn: '故障模式',     year: 2022, rows: 6, cols: 11, time: 225, era: 'glitch' },
+  { song: 'Beatbox',          cn: '节拍盒',      year: 2022, rows: 6, cols: 12, time: 240, era: 'beatbox' },
+  { song: 'Candy',            cn: '糖果',        year: 2022, rows: 7, cols: 10, time: 255, era: 'candy' },
+  { song: 'ISTJ',             cn: 'ISTJ',       year: 2023, rows: 8, cols: 11, time: 270, era: 'istj' },
+  { song: 'Broken Melodies',  cn: '破碎的旋律',   year: 2023, rows: 7, cols: 12, time: 285, era: 'note' },
+  { song: 'Smoothie',         cn: '冰沙',        year: 2024, rows: 8, cols: 12, time: 300, era: 'smoothie' }
 ];
+
+/* ---------- 时代装扮：卡片底色 + 头像配饰 ---------- */
+const ERAS = {
+  gum:      { bg: 'linear-gradient(145deg,#fce7f3,#e0f2fe)' },
+  heart:    { bg: 'linear-gradient(145deg,#ffe4e6,#fef3c7)' },
+  young:    { bg: 'linear-gradient(145deg,#e0f2fe,#ccfbf1)' },
+  goup:     { bg: 'linear-gradient(145deg,#dbeafe,#ede9fe)' },
+  boom:     { bg: 'linear-gradient(145deg,#fef3c7,#fecaca)' },
+  rider:    { bg: 'linear-gradient(145deg,#cffafe,#e0e7ff)' },
+  sauce:    { bg: 'linear-gradient(145deg,#fee2e2,#ffedd5)' },
+  future:   { bg: 'linear-gradient(145deg,#ede9fe,#cffafe)' },
+  glitch:   { bg: 'linear-gradient(145deg,#e0e7ff,#fce7f3)' },
+  beatbox:  { bg: 'linear-gradient(145deg,#f1f5f9,#e0f2fe)' },
+  candy:    { bg: 'linear-gradient(145deg,#fce7f3,#fef9c3)' },
+  istj:     { bg: 'linear-gradient(145deg,#f1f5f9,#f8fafc)' },
+  note:     { bg: 'linear-gradient(145deg,#dbeafe,#ede9fe)' },
+  smoothie: { bg: 'linear-gradient(145deg,#fce7f3,#dcfce7)' }
+};
+
+/* 每个时代的头像配饰（SVG 片段，叠加在头像最上层；位置避开右上角 emoji 徽章） */
+const ERA_ACC = {
+  gum: `<circle cx="50" cy="73" r="9.5" fill="#ff9ec7" opacity=".85"/><circle cx="50" cy="73" r="6" fill="#ffc2dd"/>`,
+  heart: `<path d="M31 19 c-2.5-4.5-9-2-6.5 3.2 c1.4 3 6.5 6 6.5 6 s5-3 6.4-6 c2.5-5.2-4-7.7-6.4-3.2z" fill="#f472b6"/>`,
+  young: `<rect x="33" y="50" width="13" height="9.5" rx="3.5" fill="#3b3b52"/><rect x="54" y="50" width="13" height="9.5" rx="3.5" fill="#3b3b52"/><line x1="46" y1="54.5" x2="54" y2="54.5" stroke="#3b3b52" stroke-width="2.4"/>`,
+  goup: `<path d="M22 20 L40 12 L31 28 Z" fill="#38bdf8"/><path d="M31 28 L33.5 20.5 L28.5 22.5 Z" fill="#0369a1"/>`,
+  boom: `<path d="M28 34 l2.6 5.4 6 0.9-4.3 4.3 1 6-5.3-2.8-5.3 2.8 1-6-4.3-4.3 6-0.9z" fill="#fbbf24" stroke="#f59e0b" stroke-width="1"/>`,
+  rider: `<rect x="32" y="49.5" width="36" height="11" rx="5.5" fill="#22d3ee" opacity=".88"/><rect x="35" y="52" width="13" height="4.5" rx="2.2" fill="#fff" opacity=".65"/>`,
+  sauce: `<path d="M30 17 q9 2 7 13 q-1 5.5-6.5 4.5 q4.5-8.5-2.5-15z" fill="#ef4444"/><path d="M30 17 q-3.5-4.5 1-6.8" stroke="#16a34a" stroke-width="2.8" fill="none" stroke-linecap="round"/>`,
+  future: `<g fill="none" stroke-linecap="round"><path d="M20 36 a13 13 0 0 1 22-9" stroke="#f87171" stroke-width="3"/><path d="M23.5 37 a9.5 9.5 0 0 1 16-6.5" stroke="#fbbf24" stroke-width="3"/><path d="M27 38 a6 6 0 0 1 10-4" stroke="#38bdf8" stroke-width="3"/></g>`,
+  glitch: `<g opacity=".85"><rect x="16" y="58" width="7" height="7" fill="#a78bfa"/><rect x="79" y="52" width="8" height="8" fill="#38bdf8"/><rect x="22" y="14" width="5" height="5" fill="#f472b6"/><rect x="74" y="72" width="6" height="6" fill="#34d399"/><rect x="12" y="34" width="5" height="5" fill="#fbbf24"/></g>`,
+  beatbox: `<path d="M27 52 a23 23 0 0 1 46 0" stroke="#4b5563" stroke-width="4.5" fill="none"/><rect x="21" y="47" width="10" height="15" rx="4.5" fill="#4b5563"/><rect x="69" y="47" width="10" height="15" rx="4.5" fill="#4b5563"/><rect x="23.5" y="50" width="5" height="9" rx="2.2" fill="#f472b6"/><rect x="71.5" y="50" width="5" height="9" rx="2.2" fill="#f472b6"/>`,
+  candy: `<circle cx="31" cy="21" r="5.5" fill="#f472b6"/><path d="M31 15.5 a5.5 5.5 0 0 1 5.5 5.5 l-5.5 0z" fill="#fff" opacity=".75"/><path d="M25.8 17.5 L21 15 M25.5 24.5 L21 27" stroke="#f472b6" stroke-width="2.4" stroke-linecap="round"/>`,
+  istj: `<g><rect x="24" y="16" width="18" height="4.5" rx="2.2" fill="#94a3b8"/><rect x="24" y="23" width="12" height="4.5" rx="2.2" fill="#cbd5e1"/><rect x="24" y="30" width="15" height="4.5" rx="2.2" fill="#94a3b8" opacity=".7"/></g>`,
+  note: `<circle cx="26" cy="25" r="3.6" fill="#60a5fa"/><rect x="28.4" y="13" width="2.4" height="12" fill="#60a5fa"/><path d="M30.8 13 q6.5 1.2 6.5 6.5" stroke="#60a5fa" stroke-width="2.4" fill="none" stroke-linecap="round"/>`,
+  smoothie: `<rect x="69" y="56" width="11" height="14" rx="2.5" fill="#fda4af"/><rect x="67.5" y="53" width="14" height="4.5" rx="2.2" fill="#f472b6"/><line x1="75.5" y1="46" x2="73.5" y2="53" stroke="#a3e635" stroke-width="2.6" stroke-linecap="round"/>`
+};
+
+/* 当前对局的装扮（闯关=关卡设定；每日=按日期确定；无尽=按轮数轮换） */
+function eraOfBoard() {
+  if (typeof Game === 'undefined') return null;
+  const ids = Object.keys(ERAS);
+  if (Game.mode === 'classic') return LEVELS[Game.levelIdx].era;
+  if (Game.mode === 'daily') return ids[djb2Hash(Game.dailyDate) % ids.length];
+  if (Game.mode === 'endless') return ids[(Game.endlessRound - 1) % ids.length];
+  return null;
+}
 
 /* 连击欢呼语 */
 const PHRASES = [
@@ -260,10 +307,12 @@ function achDesc(a) {
 }
 
 /* style: 0=Mark 1=Renjun 2=Jeno 3=Haechan 4=Jaemin 5=Chenle 6=Jisung */
-function avatarSVG(member, size) {
+/* ---------- SVG 卡通头像（代码绘制，非真实形象） ---------- */
+function avatarSVG(member, size, eraId) {
   const i = MEMBERS.indexOf(member);
   const c = member.color;
   const badge = `<text x="74" y="26" font-size="17">${member.emoji}</text>`;
+  const eraAcc = eraId && ERA_ACC[eraId] ? ERA_ACC[eraId] : '';
   let hair = '';
   if (i === 0) { /* Mark：棒球帽 */
     hair = `
@@ -321,6 +370,7 @@ function avatarSVG(member, size) {
     <ellipse cx="66.5" cy="64" rx="4.2" ry="2.6" fill="#ffb3c0" opacity=".75"/>
     <path d="M44 67 Q50 72.5 56 67" stroke="#c96f5e" stroke-width="2.4" fill="none" stroke-linecap="round"/>
     ${badge}
+    ${eraAcc}
   </svg>`;
 }
 
