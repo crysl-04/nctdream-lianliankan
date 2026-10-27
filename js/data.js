@@ -211,6 +211,36 @@ function memberFun(m) {
   const lang = (typeof Save !== 'undefined' && Save.data && Save.data.settings && Save.data.settings.lang) || 'zh';
   return lang === 'en' ? (MEMBER_FUN_EN[m.id] || m.fun) : m.fun;
 }
+/* 成就的英文名称与描述（id 对应） */
+const ACHIEVEMENTS_EN = {
+  first_win:  { name: 'Stage Debut',    desc: 'Clear any game' },
+  combo5:     { name: 'Combo Master',   desc: 'Reach a 5 combo in one game' },
+  combo10:    { name: 'Full Mic',       desc: 'Reach a 10 combo in one game' },
+  stars12:    { name: 'Collector',      desc: 'Earn 12 stars in total' },
+  stars30:    { name: 'Star Collector', desc: 'Earn 30 stars in total' },
+  all_stars:  { name: 'Full-star Legend', desc: '3-star every level' },
+  level7:     { name: 'Hello Future',   desc: 'Clear level 7' },
+  clear_all:  { name: 'Dream Complete', desc: 'Clear all 14 levels' },
+  endless3:   { name: 'Endless Warrior', desc: 'Clear 3 rounds in one endless run' },
+  endless6:   { name: 'Nonstop',        desc: 'Clear 6 rounds in one endless run' },
+  endless10:  { name: 'Endless Voyage', desc: 'Clear 10 rounds in one endless run' },
+  daily:      { name: 'Daily Check-in', desc: 'Complete a daily challenge' },
+  streak3:    { name: 'Three in a Row', desc: '3-day daily challenge streak' },
+  no_item:    { name: 'Bare Hands',     desc: 'Clear a game without using items' },
+  score500:   { name: 'High Scorer',    desc: 'Score over 500 in one game' },
+  score1000:  { name: 'Thousand Club',  desc: 'Score over 1000 in one game' },
+  marathon:   { name: 'Marathon',       desc: 'A single game longer than 10 minutes' },
+  night_owl:  { name: 'Night Owl',      desc: 'Finish a game between 0-5 AM' }
+};
+function achName(a) {
+  const lang = (typeof Save !== 'undefined' && Save.data && Save.data.settings && Save.data.settings.lang) || 'zh';
+  return lang === 'en' && ACHIEVEMENTS_EN[a.id] ? ACHIEVEMENTS_EN[a.id].name : a.name;
+}
+function achDesc(a) {
+  const lang = (typeof Save !== 'undefined' && Save.data && Save.data.settings && Save.data.settings.lang) || 'zh';
+  return lang === 'en' && ACHIEVEMENTS_EN[a.id] ? ACHIEVEMENTS_EN[a.id].desc : a.desc;
+}
+
 /* style: 0=Mark 1=Renjun 2=Jeno 3=Haechan 4=Jaemin 5=Chenle 6=Jisung */
 function avatarSVG(member, size) {
   const i = MEMBERS.indexOf(member);

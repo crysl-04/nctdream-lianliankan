@@ -490,7 +490,7 @@ const UI = {
     if (fresh.length) {
       const names = fresh.map(id => {
         const a = ACHIEVEMENTS.find(x => x.id === id);
-        return a ? `${a.icon}${a.name}` : id;
+        return a ? `${a.icon}${achName(a)}` : id;
       });
       SFX.achieveFx();
       setTimeout(() => this.toast(tf('toastAch', { s: names.join('、')})), 600);
@@ -509,7 +509,7 @@ const UI = {
       const unlocked = got.includes(a.id);
       return `<div class="ach-card ${unlocked ? 'on' : 'off'}">
         <span class="ach-icon">${unlocked ? a.icon : '🔒'}</span>
-        <span class="ach-text"><b>${a.name}</b><small>${a.desc}</small></span>
+        <span class="ach-text"><b>${achName(a)}</b><small>${achDesc(a)}</small></span>
       </div>`;
     }).join('');
     this.showModal(`

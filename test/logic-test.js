@@ -15,10 +15,10 @@ globalThis.SFX = {};
 const src = [
   fs.readFileSync(path.join(__dirname, '../js/data.js'), 'utf8'),
   fs.readFileSync(path.join(__dirname, '../js/game.js'), 'utf8'),
-  '\n;globalThis.__NCT = { Game, Save, LEVELS, MEMBERS, avatarSVG, memberByType, PHRASES, ACHIEVEMENTS, djb2Hash, mulberry32, todayKey, I18N, t, tf, memberFun };'
+  '\n;globalThis.__NCT = { Game, Save, LEVELS, MEMBERS, avatarSVG, memberByType, PHRASES, ACHIEVEMENTS, djb2Hash, mulberry32, todayKey, I18N, t, tf, memberFun, achName, achDesc };'
 ].join('\n');
 vm.runInThisContext(src, { filename: 'game-bundle.js' });
-const { Game, Save, LEVELS, MEMBERS, avatarSVG, memberByType, PHRASES, ACHIEVEMENTS, djb2Hash, mulberry32, todayKey, I18N, t, tf, memberFun } = globalThis.__NCT;
+const { Game, Save, LEVELS, MEMBERS, avatarSVG, memberByType, PHRASES, ACHIEVEMENTS, djb2Hash, mulberry32, todayKey, I18N, t, tf, memberFun, achName, achDesc } = globalThis.__NCT;
 
 let failures = 0;
 const check = (name, cond, extra) => {
@@ -240,6 +240,13 @@ console.log('--- 成就与存档 ---');
     check('t() 未知键回退键名', t('__no_such_key__') === '__no_such_key__');
     check('tf() 占位符替换', tf('levelLabel', { n: 3, s: 'We Young' }) === 'Level 3 · We Young');
     check('成员趣味描述双语', typeof memberFun(MEMBERS[0]) === 'string' && memberFun(MEMBERS[0]).length > 5);
+    Save.data.settings.lang = 'zh';
+    const ach0 = ACHIEVEMENTS[0];
+    const zhAchName = achName(ach0);
+    Save.data.settings.lang = 'en';
+    check('成就名称双语', achName(ach0) !== zhAchName && achName(ach0).length > 2);
+    check('成就描述双语', achDesc(ach0) !== ach0.desc);
+    check('成就英文表覆盖全部 id', ACHIEVEMENTS.every(a => achDesc(a) !== a.desc));
     Save.data.settings.lang = 'zh';
     check('切回中文', t('winTitle') === '关卡完成！');
   }
