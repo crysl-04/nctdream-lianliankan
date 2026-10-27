@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <title>NCT DREAM 连连看 · Dream Match</title>
+  <meta name="description" content="NCT DREAM 主题连连看小游戏——连接相同的少年卡片，收集全部七位成员！粉丝自制，纯前端，完全免费。" />
+  <meta name="theme-color" content="#34d399" />
+  <link rel="icon" href="icon.svg" type="image/svg+xml" />
+  <link rel="manifest" href="manifest.json" />
+  <link rel="stylesheet" href="css/style.css" />
+</head>
+<body>
+  <div id="bg-deco" aria-hidden="true"></div>
+
+  <!-- ====== 开始菜单 ====== -->
+  <section id="screen-menu" class="screen">
+    <div class="menu-logo">
+      <div class="logo-emoji">🌈</div>
+      <h1>NCT DREAM <em>连连看</em></h1>
+      <p class="slogan">连接相同的少年卡片 · We dream, we match!</p>
+      <div class="menu-avatars" id="menu-avatars"></div>
+    </div>
+    <div class="menu-buttons">
+      <button id="btn-classic" class="btn big primary">🚀 开始闯关</button>
+      <button id="btn-endless" class="btn big ghost">♾️ 无尽模式</button>
+      <button id="btn-levels" class="btn big ghost">🗺️ 关卡选择</button>
+      <button id="btn-about" class="btn big ghost">💚 成员图鉴</button>
+      <button id="btn-settings" class="btn big ghost">⚙️ 设置</button>
+    </div>
+    <p class="menu-stats" id="menu-stats"></p>
+    <p class="menu-foot">非官方粉丝作品 · 纯前端实现 · 完全免费 · 支持手机</p>
+  </section>
+
+  <!-- ====== 游戏界面 ====== -->
+  <section id="screen-game" class="screen hidden">
+    <div id="hud">
+      <div class="hud-left">
+        <button id="btn-exit" class="btn small ghost" title="返回菜单">🏠</button>
+        <div class="hud-level">
+          <span id="hud-level-name">—</span>
+          <span id="hud-mode" class="hud-mode">闯关模式</span>
+        </div>
+      </div>
+      <div class="hud-right">
+        <div class="pill">得分 <b id="hud-score">0</b></div>
+        <div class="pill combo-pill">连击 <b id="hud-combo">x0</b></div>
+        <button id="btn-sound" class="icon-btn" title="音效开关">🔊</button>
+      </div>
+    </div>
+
+    <div id="timer-bar">
+      <div id="timer-fill"></div>
+      <span id="timer-text">0:00</span>
+    </div>
+
+    <div id="board-wrap">
+      <div id="board"></div>
+      <svg id="line-layer" xmlns="http://www.w3.org/2000/svg"></svg>
+    </div>
+
+    <div id="item-bar">
+      <button id="btn-hint" class="item-btn">💡<span>提示</span><b id="cnt-hint">3</b></button>
+      <button id="btn-shuffle" class="item-btn">🔀<span>洗牌</span><b id="cnt-shuffle">2</b></button>
+      <button id="btn-clock" class="item-btn">⏰<span>+20s</span><b id="cnt-clock">1</b></button>
+      <button id="btn-restart" class="item-btn">↻<span>重开</span></button>
+    </div>
+  </section>
+
+  <!-- 弹窗 / 提示层 -->
+  <div id="modal-mask" class="hidden"></div>
+  <div id="modal" class="hidden"></div>
+  <div id="toast" class="hidden"></div>
+  <canvas id="confetti"></canvas>
+
+  <script src="js/data.js"></script>
+  <script src="js/audio.js"></script>
+  <script src="js/game.js"></script>
+  <script src="js/ui.js"></script>
+  <script src="js/main.js"></script>
+</body>
+</html>

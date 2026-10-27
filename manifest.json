@@ -1,0 +1,20 @@
+{
+  "name": "NCT DREAM 连连看",
+  "short_name": "DREAM连连看",
+  "description": "NCT DREAM 主题连连看小游戏，粉丝自制，完全免费。",
+  "start_url": "./index.html",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "any",
+  "background_color": "#eef7ff",
+  "theme_color": "#34d399",
+  "lang": "zh-CN",
+  "icons": [
+    {
+      "src": "icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    }
+  ]
+}
