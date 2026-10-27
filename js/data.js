@@ -77,6 +77,22 @@ const PHRASES = [
 /* 背景漂浮装饰 */
 const BG_EMOJIS = ['🌈', '⭐', '☁️', '💚', '🌟', '🌙', '💫', '🎵'];
 
+/* 成就定义 */
+const ACHIEVEMENTS = [
+  { id: 'first_win',  name: '初次登台',   desc: '完成任意一关',            icon: '🎤' },
+  { id: 'combo5',     name: '连击达人',   desc: '单局达成 5 连击',         icon: '🔥' },
+  { id: 'combo10',    name: '全开麦',     desc: '单局达成 10 连击',        icon: '💥' },
+  { id: 'stars12',    name: '收藏家',     desc: '累计获得 12 颗星',        icon: '⭐' },
+  { id: 'all_stars',  name: '满星传说',   desc: '全部关卡满星通关',        icon: '👑' },
+  { id: 'level7',     name: 'Hello Future', desc: '通过第 7 关',           icon: '🌈' },
+  { id: 'clear_all',  name: 'Dream 完结', desc: '通过全部 14 关',          icon: '🏆' },
+  { id: 'endless3',   name: '无尽战士',   desc: '无尽模式单局通过 3 轮',   icon: '♾️' },
+  { id: 'endless6',   name: '永不停歇',   desc: '无尽模式单局通过 6 轮',   icon: '🚀' },
+  { id: 'daily',      name: '每日打卡',   desc: '完成一次每日挑战',        icon: '📅' },
+  { id: 'no_item',    name: '裸装通关',   desc: '不使用道具通关任意关卡',  icon: '🧘' },
+  { id: 'score500',   name: '高分少年',   desc: '单局得分超过 500',        icon: '💯' }
+];
+
 /* ---------- SVG 卡通头像（代码绘制，非真实形象） ---------- */
 /* style: 0=Mark 1=Renjun 2=Jeno 3=Haechan 4=Jaemin 5=Chenle 6=Jisung */
 function avatarSVG(member, size) {

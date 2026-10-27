@@ -15,10 +15,10 @@ globalThis.SFX = {};
 const src = [
   fs.readFileSync(path.join(__dirname, '../js/data.js'), 'utf8'),
   fs.readFileSync(path.join(__dirname, '../js/game.js'), 'utf8'),
-  '\n;globalThis.__NCT = { Game, Save, LEVELS, MEMBERS, avatarSVG, memberByType, PHRASES };'
+  '\n;globalThis.__NCT = { Game, Save, LEVELS, MEMBERS, avatarSVG, memberByType, PHRASES, ACHIEVEMENTS, djb2Hash, mulberry32, todayKey };'
 ].join('\n');
 vm.runInThisContext(src, { filename: 'game-bundle.js' });
-const { Game, Save, LEVELS, MEMBERS, avatarSVG, memberByType, PHRASES } = globalThis.__NCT;
+const { Game, Save, LEVELS, MEMBERS, avatarSVG, memberByType, PHRASES, ACHIEVEMENTS, djb2Hash, mulberry32, todayKey } = globalThis.__NCT;
 
 let failures = 0;
 const check = (name, cond, extra) => {
@@ -146,6 +146,58 @@ console.log('--- 评星 ---');
   Game.timeLeft = 50; check('剩余 50% → 3 星', Game.stars() === 3);
   Game.timeLeft = 30; check('剩余 30% → 2 星', Game.stars() === 2);
   Game.timeLeft = 10; check('剩余 10% → 1 星', Game.stars() === 1);
+}
+
+/* ---------- 5. 每日挑战 ---------- */
+console.log('--- 每日挑战 ---');
+{
+  const key = todayKey();
+  Game.startDaily(key); Game.stopTimer();
+  const layout1 = Game.tiles.map(t => t.type).join(',');
+  check('每日挑战棋盘 8×9=72 格', Game.rows === 8 && Game.cols === 9 && Game.tiles.length === 72);
+  Game.startDaily(key); Game.stopTimer();
+  const layout2 = Game.tiles.map(t => t.type).join(',');
+  check('同一天两次开局棋盘完全一致（种子确定性）', layout1 === layout2);
+  Game.startDaily('2026-10-27'); Game.stopTimer();
+  const layoutOther = Game.tiles.map(t => t.type).join(',');
+  check('不同日期棋盘不同', layoutOther !== layout1);
+  check('每日挑战模式标记', Game.mode === 'daily' && Game.dailyDate === '2026-10-27');
+
+  /* 完全可解 */
+  let guard = 0;
+  while (Game.remaining() > 0 && guard++ < 5000) {
+    const pair = Game.findAnyPair();
+    if (!pair) { Game.shufflePositions(); Game.ensureSolvable(); continue; }
+    pair[0].alive = false; pair[1].alive = false;
+    Game.grid[pair[0].r][pair[0].c] = 0;
+    Game.grid[pair[1].r][pair[1].c] = 0;
+  }
+  check('每日挑战棋盘可完全通关', Game.remaining() === 0);
+}
+
+/* ---------- 6. 成就与存档 ---------- */
+console.log('--- 成就与存档 ---');
+{
+  /* 模拟 localStorage */
+  const store = {};
+  globalThis.localStorage = {
+    getItem: k => (k in store ? store[k] : null),
+    setItem: (k, v) => { store[k] = String(v); },
+    removeItem: k => { delete store[k]; }
+  };
+  Save.data = { unlocked: 0, stars: {}, best: {}, endlessBest: 0, daily: {}, achievements: [], settings: { sfx: true, music: true } };
+
+  check('记录每日成绩并刷新最佳', Save.recordDaily('2026-10-28', 300, 2) === true);
+  check('更低分不刷新最佳', Save.recordDaily('2026-10-28', 100, 3) === false);
+  check('今日最佳保持 300 分且星级取更高', Save.data.daily['2026-10-28'].score === 300 && Save.data.daily['2026-10-28'].stars === 3);
+
+  const fresh1 = Save.unlockAchievements(['first_win', 'combo5', 'first_win']);
+  check('成就去重解锁', fresh1.length === 2 && Save.data.achievements.length === 2);
+  const fresh2 = Save.unlockAchievements(['first_win']);
+  check('重复解锁返回空', fresh2.length === 0);
+
+  check('成就定义无重复 id', new Set(ACHIEVEMENTS.map(a => a.id)).size === ACHIEVEMENTS.length);
+  check('今日日期键格式', /^\d{4}-\d{2}-\d{2}$/.test(todayKey()));
 }
 
 console.log(failures === 0 ? '\n🎉 全部测试通过' : `\n💥 ${failures} 个测试失败`);

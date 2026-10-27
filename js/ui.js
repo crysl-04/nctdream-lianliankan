@@ -15,6 +15,7 @@ const UI = {
     this.els = {
       screenMenu: $('screen-menu'), screenGame: $('screen-game'),
       btnClassic: $('btn-classic'), btnEndless: $('btn-endless'),
+      btnDaily: $('btn-daily'), btnAchievements: $('btn-achievements'),
       btnLevels: $('btn-levels'), btnAbout: $('btn-about'), btnSettings: $('btn-settings'),
       menuStats: $('menu-stats'),
       btnExit: $('btn-exit'), hudLevelName: $('hud-level-name'), hudMode: $('hud-mode'),
@@ -43,6 +44,8 @@ const UI = {
   bindEvents() {
     this.els.btnClassic.addEventListener('click', () => { SFX.ensure(); this.startClassic(Math.min(Save.data.unlocked, LEVELS.length - 1)); });
     this.els.btnEndless.addEventListener('click', () => { SFX.ensure(); this.startEndlessRun(); });
+    this.els.btnDaily.addEventListener('click', () => { SFX.ensure(); this.startDailyRun(); });
+    this.els.btnAchievements.addEventListener('click', () => this.showAchievementsModal());
     this.els.btnLevels.addEventListener('click', () => this.showLevelsModal());
     this.els.btnAbout.addEventListener('click', () => this.showAboutModal());
     this.els.btnSettings.addEventListener('click', () => this.showSettingsModal());
@@ -92,6 +95,12 @@ const UI = {
   startEndlessRun() {
     Game.score = 0; Game.maxCombo = 0; Game.boardsCleared = 0;
     Game.startEndless(1);
+    this.enterGame();
+  },
+
+  startDailyRun() {
+    Game.score = 0; Game.maxCombo = 0;
+    Game.startDaily(todayKey());
     this.enterGame();
   },
 
@@ -239,7 +248,12 @@ const UI = {
     div.className = 'combo-pop';
     div.style.left = x + 'px';
     div.style.top = y + 'px';
-    if (res.combo >= 2) {
+    if (Game.sameTypeStreak >= 3) {
+      /* 彩蛋：连续消除同一成员触发专属欢呼 */
+      const m = memberByType(res.a.type);
+      div.textContent = `${m.name} TIME! x${Game.sameTypeStreak} ${m.emoji}`;
+      div.classList.add('hot');
+    } else if (res.combo >= 2) {
       const phrase = PHRASES[(Math.random() * PHRASES.length) | 0];
       div.textContent = `${res.combo} 连击 · ${phrase}`;
       div.classList.add('hot');
@@ -256,6 +270,9 @@ const UI = {
       const L = LEVELS[Game.levelIdx];
       this.els.hudLevelName.textContent = `第 ${Game.levelIdx + 1} 关 · ${L.song}`;
       this.els.hudMode.textContent = '闯关模式';
+    } else if (Game.mode === 'daily') {
+      this.els.hudLevelName.textContent = `每日挑战 · ${Game.dailyDate}`;
+      this.els.hudMode.textContent = '每日挑战';
     } else {
       this.els.hudLevelName.textContent = `第 ${Game.endlessRound} 轮`;
       this.els.hudMode.textContent = '无尽模式';
@@ -319,6 +336,7 @@ const UI = {
 
   restartAction() {
     if (Game.mode === 'classic') Game.startClassic(Game.levelIdx);
+    else if (Game.mode === 'daily') Game.startDaily(Game.dailyDate);
     else Game.startEndless(Game.endlessRound);
     this.renderBoard();
     this.updateHUD();
@@ -328,12 +346,99 @@ const UI = {
     this.toast('已重新开始 ↻');
   },
 
+  /* ---------- 分享战绩 ---------- */
+  shareScore() {
+    let text = '';
+    const site = location.origin + location.pathname;
+    if (Game.mode === 'classic') {
+      const L = LEVELS[Game.levelIdx];
+      const stars = '⭐'.repeat(Game.stars());
+      text = `🌈 NCT DREAM 连连看\n🎶 第${Game.levelIdx + 1}关《${L.song}》${stars}\n💯 得分 ${Game.score} · 最高连击 x${Game.maxCombo}${Game.itemsUsed ? '' : ' · 零道具通关!'}`;
+    } else if (Game.mode === 'daily') {
+      const stars = '⭐'.repeat(Game.stars());
+      text = `🌈 NCT DREAM 连连看 · 每日挑战\n📅 ${Game.dailyDate} ${stars}\n💯 得分 ${Game.score} · 最高连击 x${Game.maxCombo}`;
+    } else {
+      text = `🌈 NCT DREAM 连连看 · 无尽模式\n♾️ 通过 ${Game.boardsCleared} 轮\n💯 总分 ${Game.score}`;
+    }
+    text += `\n▶ ${site}`;
+    const done = () => this.toast('战绩已复制，去分享吧 📋');
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(text).then(done).catch(() => this.fallbackCopy(text, done));
+    } else {
+      this.fallbackCopy(text, done);
+    }
+  },
+
+  fallbackCopy(text, done) {
+    const ta = document.createElement('textarea');
+    ta.value = text;
+    ta.style.position = 'fixed';
+    ta.style.opacity = '0';
+    document.body.appendChild(ta);
+    ta.select();
+    try { document.execCommand('copy'); done(); } catch (e) { this.toast('复制失败，请手动截图分享'); }
+    ta.remove();
+  },
+
+  /* ---------- 成就 ---------- */
+  checkAchievements(context) {
+    const d = Save.data;
+    const totalStars = Object.values(d.stars).reduce((a, b) => a + b, 0);
+    const clearedCount = Object.keys(d.stars).length;
+    const ids = [];
+    if (context === 'win' || context === 'daily') {
+      if (clearedCount >= 1 || context === 'daily') ids.push('first_win');
+      if (Game.maxCombo >= 5) ids.push('combo5');
+      if (Game.maxCombo >= 10) ids.push('combo10');
+      if (Game.score > 500) ids.push('score500');
+      if (Game.itemsUsed === 0) ids.push('no_item');
+    }
+    if (context === 'win' && Game.mode === 'classic') {
+      if (Game.levelIdx >= 6) ids.push('level7');
+      if (Game.levelIdx >= LEVELS.length - 1) ids.push('clear_all');
+    }
+    if (context === 'daily') ids.push('daily');
+    if (context === 'endless') {
+      if (Game.boardsCleared >= 3) ids.push('endless3');
+      if (Game.boardsCleared >= 6) ids.push('endless6');
+    }
+    if (totalStars >= 12) ids.push('stars12');
+    if (LEVELS.length > 0 && Object.values(d.stars).filter(s => s === 3).length >= LEVELS.length) ids.push('all_stars');
+    const fresh = Save.unlockAchievements(ids);
+    if (fresh.length) {
+      const names = fresh.map(id => {
+        const a = ACHIEVEMENTS.find(x => x.id === id);
+        return a ? `${a.icon}${a.name}` : id;
+      });
+      setTimeout(() => this.toast('🏅 成就解锁：' + names.join('、')), 600);
+      this.renderMenuStats();
+    }
+  },
+
+  showAchievementsModal() {
+    const got = Save.data.achievements;
+    const items = ACHIEVEMENTS.map(a => {
+      const unlocked = got.includes(a.id);
+      return `<div class="ach-card ${unlocked ? 'on' : 'off'}">
+        <span class="ach-icon">${unlocked ? a.icon : '🔒'}</span>
+        <span class="ach-text"><b>${a.name}</b><small>${a.desc}</small></span>
+      </div>`;
+    }).join('');
+    this.showModal(`
+      <h2 class="modal-title">成就 ${got.length}/${ACHIEVEMENTS.length} 🏅</h2>
+      <div class="ach-grid">${items}</div>
+      <div class="modal-actions"><button class="btn ghost" data-action="close-modal">关闭</button></div>`);
+  },
+
   /* ---------- 胜负 ---------- */
   onWin() {
     const bonus = Game.finishWin();
     SFX.win();
     this.confetti();
     this.updateHUD();
+    this.checkAchievements('win');
+
+    const statsLine = `<p class="modal-lines">消除奖励 <b>+${bonus}</b> · 总分 <b>${Game.score}</b> · 最高连击 <b>x${Game.maxCombo}</b>${Game.itemsUsed ? ` · 用了 ${Game.itemsUsed} 个道具` : ' · 零道具'}</p>`;
 
     if (Game.mode === 'classic') {
       const stars = Game.stars();
@@ -344,19 +449,37 @@ const UI = {
         <div class="win-face">${avatarSVG(MEMBERS[Game.levelIdx % MEMBERS.length], 90)}</div>
         <h2 class="modal-title">${isLast ? '全部关卡完成！🎉' : '关卡完成！'}</h2>
         <div class="stars">${starStr}</div>
-        <p class="modal-lines">消除奖励 <b>+${bonus}</b> · 总分 <b>${Game.score}</b></p>
+        ${statsLine}
         <p class="modal-sub">最佳成绩：${Save.data.best[Game.levelIdx] || Game.score}</p>
         <div class="modal-actions">
           ${isLast ? '' : '<button class="btn primary" data-action="next-level">下一关 ▶</button>'}
+          <button class="btn ghost" data-action="share-score">📋 分享</button>
           <button class="btn ghost" data-action="replay">再玩一次 ↻</button>
+          <button class="btn ghost" data-action="menu">返回菜单 🏠</button>
+        </div>`);
+    } else if (Game.mode === 'daily') {
+      const stars = Game.stars();
+      const isNewBest = Save.recordDaily(Game.dailyDate, Game.score, stars);
+      this.checkAchievements('daily');
+      const starStr = '⭐'.repeat(stars) + '✩'.repeat(3 - stars);
+      this.showModal(`
+        <div class="win-face">${avatarSVG(MEMBERS[djb2Hash(Game.dailyDate) % MEMBERS.length], 90)}</div>
+        <h2 class="modal-title">每日挑战完成！📅</h2>
+        <div class="stars">${starStr}</div>
+        ${statsLine}
+        <p class="modal-sub">${isNewBest ? '🎊 刷新今日最佳！' : '今日最佳：' + Save.data.daily[Game.dailyDate].score}</p>
+        <div class="modal-actions">
+          <button class="btn primary" data-action="share-score">📋 分享战绩</button>
+          <button class="btn ghost" data-action="replay">再挑战一次 ↻</button>
           <button class="btn ghost" data-action="menu">返回菜单 🏠</button>
         </div>`);
     } else {
       Save.recordEndless(Game.boardsCleared, Game.score);
+      this.checkAchievements('endless');
       this.showModal(`
         <div class="win-face">${avatarSVG(MEMBERS[(Game.boardsCleared) % MEMBERS.length], 90)}</div>
         <h2 class="modal-title">第 ${Game.endlessRound} 轮完成！</h2>
-        <p class="modal-lines">总进度 <b>${Game.boardsCleared}</b> 轮 · 总分 <b>${Game.score}</b></p>
+        <p class="modal-lines">总进度 <b>${Game.boardsCleared}</b> 轮 · 总分 <b>${Game.score}</b> · 最高连击 <b>x${Game.maxCombo}</b></p>
         <p class="modal-sub">无尽最佳：${Save.data.endlessBest} 轮</p>
         <div class="modal-actions">
           <button class="btn primary" data-action="endless-next">下一轮 ▶</button>
@@ -373,6 +496,16 @@ const UI = {
         <h2 class="modal-title">时间到啦！</h2>
         <p class="modal-lines">${LEVELS[Game.levelIdx].song} · 得分 <b>${Game.score}</b></p>
         <p class="modal-sub">提示：优先消除被围住的卡片，连击有额外加分</p>
+        <div class="modal-actions">
+          <button class="btn primary" data-action="replay">再试一次 ↻</button>
+          <button class="btn ghost" data-action="menu">返回菜单 🏠</button>
+        </div>`);
+    } else if (Game.mode === 'daily') {
+      this.showModal(`
+        <div class="lose-face">⏰</div>
+        <h2 class="modal-title">今天的挑战没成功…</h2>
+        <p class="modal-lines">每日挑战 · 得分 <b>${Game.score}</b></p>
+        <p class="modal-sub">棋盘每天固定，摸清布局明天再战或现在再试一次！</p>
         <div class="modal-actions">
           <button class="btn primary" data-action="replay">再试一次 ↻</button>
           <button class="btn ghost" data-action="menu">返回菜单 🏠</button>
@@ -426,6 +559,7 @@ const UI = {
       case 'replay': this.restartAction(); break;
       case 'menu': this.exitToMenu(); break;
       case 'close-modal': this.closeModal(); break;
+      case 'share-score': this.shareScore(); break;
       case 'start-level': this.startClassic(parseInt(btn.dataset.idx, 10)); this.closeModal(); break;
       case 'toggle-sfx': {
         SFX.ensure();
@@ -507,8 +641,10 @@ const UI = {
   renderMenuStats() {
     const d = Save.data;
     const totalStars = Object.values(d.stars).reduce((a, b) => a + b, 0);
+    const today = d.daily[todayKey()];
+    const dailyStr = today ? `今日挑战 ⭐${today.stars} ${today.score}分` : '今日挑战未完成';
     this.els.menuStats.textContent =
-      `闯关进度 ${Math.min(d.unlocked + 1, LEVELS.length)}/${LEVELS.length} · ⭐ ${totalStars}/${LEVELS.length * 3} · 无尽最佳 ${d.endlessBest} 轮`;
+      `闯关 ${Math.min(d.unlocked + 1, LEVELS.length)}/${LEVELS.length} · ⭐ ${totalStars}/${LEVELS.length * 3} · 无尽 ${d.endlessBest} 轮 · 🏅 ${d.achievements.length}/${ACHIEVEMENTS.length} · ${dailyStr}`;
   },
 
   /* ---------- 杂项特效 ---------- */

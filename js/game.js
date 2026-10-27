@@ -7,9 +7,10 @@
 
 const Game = {
   state: 'idle',            // idle | playing | won | lost
-  mode: 'classic',          // classic | endless
+  mode: 'classic',          // classic | endless | daily
   levelIdx: 0,
   endlessRound: 1,
+  dailyDate: '',
   rows: 0, cols: 0,
   grid: [],                 // (rows+2)x(cols+2)，0=空，>0=成员类型
   tiles: [],                // 所有卡片对象 {r,c,type,alive}
@@ -19,6 +20,9 @@ const Game = {
   timeLeft: 0, levelSeconds: 0, timerId: null,
   items: { hint: 0, shuffle: 0, clock: 0 },
   boardsCleared: 0,
+  itemsUsed: 0,
+  matchCount: 0,
+  sameTypeStreak: 0, lastMatchType: 0,
 
   R() { return this.rows + 2; },
   C() { return this.cols + 2; },
@@ -31,6 +35,19 @@ const Game = {
     const typeCount = Math.min(MEMBERS.length, 4 + Math.floor(idx / 2));
     this._setup(L.rows, L.cols, typeCount, L.time);
     return L;
+  },
+
+  /* 每日挑战：以日期字符串为种子，全世界同一天棋盘一致 */
+  startDaily(dateKey) {
+    this.mode = 'daily';
+    this.dailyDate = dateKey;
+    const origRandom = Math.random;
+    Math.random = mulberry32(djb2Hash(dateKey));
+    try {
+      this._setup(8, 9, 7, 300);
+    } finally {
+      Math.random = origRandom;
+    }
   },
 
   startEndless(round) {
@@ -53,6 +70,10 @@ const Game = {
     this.combo = 0;
     this.lastMatchAt = 0;
     this.items = { hint: 3, shuffle: 2, clock: 1 };
+    this.itemsUsed = 0;
+    this.matchCount = 0;
+    this.sameTypeStreak = 0;
+    this.lastMatchType = 0;
 
     const cells = rows * cols;
     const pairs = cells / 2;
@@ -160,6 +181,9 @@ const Game = {
       this.combo = now - this.lastMatchAt < 4000 ? this.combo + 1 : 1;
       this.lastMatchAt = now;
       this.maxCombo = Math.max(this.maxCombo, this.combo);
+      this.matchCount++;
+      this.sameTypeStreak = a.type === this.lastMatchType ? this.sameTypeStreak + 1 : 1;
+      this.lastMatchType = a.type;
       const gain = 10 + Math.min(this.combo - 1, 9) * 5;
       this.score += gain;
       return { status: 'matched', path, a, b, gain, combo: this.combo };
@@ -223,12 +247,14 @@ const Game = {
     const pair = this.findAnyPair();
     if (!pair) return null;
     this.items.hint--;
+    this.itemsUsed++;
     return pair;
   },
 
   useShuffle() {
     if (this.items.shuffle <= 0 || this.state !== 'playing') return false;
     this.items.shuffle--;
+    this.itemsUsed++;
     this.shufflePositions();
     this.ensureSolvable();
     return true;
@@ -237,6 +263,7 @@ const Game = {
   useClock() {
     if (this.items.clock <= 0 || this.state !== 'playing') return false;
     this.items.clock--;
+    this.itemsUsed++;
     this.timeLeft += 20;
     return true;
   },
@@ -263,7 +290,7 @@ const Game = {
   },
 
   stars() {
-    if (this.mode !== 'classic') return 0;
+    if (this.mode === 'endless') return 0;
     const ratio = this.timeLeft / this.levelSeconds;
     return ratio >= 0.5 ? 3 : ratio >= 0.25 ? 2 : 1;
   },
@@ -281,7 +308,7 @@ const Game = {
 /* ---------- 存档 ---------- */
 const Save = {
   KEY: 'nct_dream_llk_v1',
-  data: { unlocked: 0, stars: {}, best: {}, endlessBest: 0, settings: { sfx: true, music: true } },
+  data: { unlocked: 0, stars: {}, best: {}, endlessBest: 0, daily: {}, achievements: [], settings: { sfx: true, music: true } },
 
   load() {
     try {
@@ -290,6 +317,8 @@ const Save = {
         const d = JSON.parse(raw);
         this.data = Object.assign(this.data, d);
         this.data.settings = Object.assign({ sfx: true, music: true }, d.settings || {});
+        this.data.daily = d.daily || {};
+        this.data.achievements = d.achievements || [];
       }
     } catch (e) { /* 忽略损坏存档 */ }
     return this.data;
@@ -314,8 +343,59 @@ const Save = {
     this.write();
   },
 
+  recordDaily(dateKey, score, stars) {
+    const rec = this.data.daily[dateKey];
+    const isNewBest = !rec || score > rec.score;
+    if (isNewBest) {
+      this.data.daily[dateKey] = { score, stars: Math.max(stars, rec ? rec.stars : 0) };
+    } else if (stars > rec.stars) {
+      rec.stars = stars;
+    }
+    this.write();
+    return isNewBest;
+  },
+
+  todayDailyBest(dateKey) {
+    const rec = this.data.daily[dateKey];
+    return rec ? rec : null;
+  },
+
+  /* 成就：返回本次新解锁的成就列表 */
+  unlockAchievements(ids) {
+    const got = this.data.achievements;
+    const fresh = [...new Set(ids)].filter(id => !got.includes(id));
+    if (fresh.length) {
+      this.data.achievements = got.concat(fresh);
+      this.write();
+    }
+    return fresh;
+  },
+
   reset() {
-    this.data = { unlocked: 0, stars: {}, best: {}, endlessBest: 0, settings: this.data.settings };
+    this.data = { unlocked: 0, stars: {}, best: {}, endlessBest: 0, daily: {}, achievements: [], settings: this.data.settings };
     this.write();
   }
 };
+
+/* ---------- 随机数工具（每日挑战种子） ---------- */
+function djb2Hash(str) {
+  let h = 5381;
+  for (let i = 0; i < str.length; i++) h = ((h << 5) + h + str.charCodeAt(i)) >>> 0;
+  return h >>> 0;
+}
+
+function mulberry32(seed) {
+  let a = seed >>> 0;
+  return function () {
+    a |= 0; a = (a + 0x6D2B79F5) | 0;
+    let t = Math.imul(a ^ (a >>> 15), 1 | a);
+    t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
+    return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+  };
+}
+
+/* 本地日期键 YYYY-MM-DD */
+function todayKey() {
+  const d = new Date();
+  return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
+}
