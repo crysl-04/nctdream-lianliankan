@@ -33,13 +33,16 @@ const Game = {
     this.levelIdx = idx;
     const L = LEVELS[idx];
     const typeCount = Math.min(MEMBERS.length, 4 + Math.floor(idx / 2));
-    this._setup(L.rows, L.cols, typeCount, L.time);
+    this.difficulty = (typeof Save !== 'undefined' && Save.data.settings.difficulty === 'hard') ? 'hard' : 'normal';
+    const time = this.difficulty === 'hard' ? Math.round(L.time * 0.75) : L.time;
+    this._setup(L.rows, L.cols, typeCount, time);
     return L;
   },
 
   /* 每日挑战：以日期字符串为种子，全世界同一天棋盘一致 */
   startDaily(dateKey) {
     this.mode = 'daily';
+    this.difficulty = 'normal';
     this.dailyDate = dateKey;
     const origRandom = Math.random;
     Math.random = mulberry32(djb2Hash(dateKey));
@@ -52,6 +55,7 @@ const Game = {
 
   startEndless(round) {
     this.mode = 'endless';
+    this.difficulty = 'normal';
     this.endlessRound = round || 1;
     const rows = Math.min(9, 5 + Math.ceil(this.endlessRound / 2));
     let cols = Math.min(12, 5 + this.endlessRound);
@@ -69,7 +73,13 @@ const Game = {
     this.selected = null;
     this.combo = 0;
     this.lastMatchAt = 0;
-    this.items = { hint: 3, shuffle: 2, clock: 1 };
+    if (this.difficulty === 'hard') {
+      this.items = { hint: 1, shuffle: 1, clock: 0 };
+      this._scoreMul = 1.5;
+    } else {
+      this.items = { hint: 3, shuffle: 2, clock: 1 };
+      this._scoreMul = 1;
+    }
     this.itemsUsed = 0;
     this.matchCount = 0;
     this.sameTypeStreak = 0;
@@ -185,7 +195,7 @@ const Game = {
       this.matchCount++;
       this.sameTypeStreak = a.type === this.lastMatchType ? this.sameTypeStreak + 1 : 1;
       this.lastMatchType = a.type;
-      const gain = 10 + Math.min(this.combo - 1, 9) * 5;
+      const gain = Math.round((10 + Math.min(this.combo - 1, 9) * 5) * (this._scoreMul || 1));
       this.score += gain;
       return { status: 'matched', path, a, b, gain, combo: this.combo };
     }
@@ -332,7 +342,7 @@ const Game = {
 /* ---------- 存档 ---------- */
 const Save = {
   KEY: 'nct_dream_llk_v1',
-  data: { unlocked: 0, stars: {}, best: {}, endlessBest: 0, daily: {}, achievements: [], history: [], settings: { sfx: true, music: true, theme: 'dream', lang: 'zh' } },
+  data: { unlocked: 0, stars: {}, best: {}, starsHard: {}, bestHard: {}, endlessBest: 0, daily: {}, achievements: [], history: [], settings: { sfx: true, music: true, theme: 'dream', lang: 'zh', difficulty: 'normal' } },
 
   load() {
     try {
@@ -340,10 +350,12 @@ const Save = {
       if (raw) {
         const d = JSON.parse(raw);
         this.data = Object.assign(this.data, d);
-        this.data.settings = Object.assign({ sfx: true, music: true, theme: 'dream', lang: 'zh' }, d.settings || {});
+        this.data.settings = Object.assign({ sfx: true, music: true, theme: 'dream', lang: 'zh', difficulty: 'normal' }, d.settings || {});
         this.data.daily = d.daily || {};
         this.data.achievements = d.achievements || [];
         this.data.history = d.history || [];
+        this.data.starsHard = d.starsHard || {};
+        this.data.bestHard = d.bestHard || {};
       }
     } catch (e) { /* 忽略损坏存档 */ }
     return this.data;
@@ -360,12 +372,17 @@ const Save = {
     this.write();
   },
 
-  recordWin(levelIdx, stars, score) {
+  recordWin(levelIdx, stars, score, hard) {
     const d = this.data;
     if (levelIdx + 1 > d.unlocked) d.unlocked = Math.min(levelIdx + 1, LEVELS.length - 1);
     if (levelIdx >= 0) {
-      d.stars[levelIdx] = Math.max(d.stars[levelIdx] || 0, stars);
-      d.best[levelIdx] = Math.max(d.best[levelIdx] || 0, score);
+      if (hard) {
+        d.starsHard[levelIdx] = Math.max(d.starsHard[levelIdx] || 0, stars);
+        d.bestHard[levelIdx] = Math.max(d.bestHard[levelIdx] || 0, score);
+      } else {
+        d.stars[levelIdx] = Math.max(d.stars[levelIdx] || 0, stars);
+        d.best[levelIdx] = Math.max(d.best[levelIdx] || 0, score);
+      }
     }
     this.write();
   },
@@ -422,7 +439,7 @@ const Save = {
   },
 
   reset() {
-    this.data = { unlocked: 0, stars: {}, best: {}, endlessBest: 0, daily: {}, achievements: [], history: [], settings: this.data.settings };
+    this.data = { unlocked: 0, stars: {}, best: {}, starsHard: {}, bestHard: {}, endlessBest: 0, daily: {}, achievements: [], history: [], settings: this.data.settings };
     this.write();
   }
 };

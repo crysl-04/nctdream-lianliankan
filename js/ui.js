@@ -61,7 +61,7 @@ const UI = {
       if (el) el.textContent = t(map[id]);
     }
     const ver = document.getElementById('menu-version');
-    if (ver) ver.textContent = 'v1.9 · Made with 💚 for NCTzens';
+    if (ver) ver.textContent = 'v2.0 · Made with 💚 for NCTzens';
     this.renderMenuStats(); /* 每日按钮文案也依赖语言 */
   },
 
@@ -366,8 +366,9 @@ const UI = {
   updateHUD() {
     if (Game.mode === 'classic') {
       const L = LEVELS[Game.levelIdx];
-      this.els.hudLevelName.textContent = tf('levelLabel', { n: Game.levelIdx + 1, s: L.song });
-      this.els.hudMode.textContent = t('classicMode');
+      const hardTag = Game.difficulty === 'hard' ? '🔥 ' : '';
+      this.els.hudLevelName.textContent = `${hardTag}${tf('levelLabel', { n: Game.levelIdx + 1, s: L.song })}`;
+      this.els.hudMode.textContent = Game.difficulty === 'hard' ? t('hardMode') : t('classicMode');
     } else if (Game.mode === 'daily') {
       this.els.hudLevelName.textContent = tf('dailyLabel', { d: Game.dailyDate });
       this.els.hudMode.textContent = t('dailyMode');
@@ -571,8 +572,9 @@ const UI = {
 
     if (Game.mode === 'classic') {
       const stars = Game.stars();
-      Save.recordWin(Game.levelIdx, stars, Game.score);
-      Save.pushHistory({ mode: "classic", label: `第${Game.levelIdx + 1}关 ${LEVELS[Game.levelIdx].song}`, score: Game.score, elapsed: Game.elapsedSec(), win: true });
+      const hard = Game.difficulty === 'hard';
+      Save.recordWin(Game.levelIdx, stars, Game.score, hard);
+      Save.pushHistory({ mode: "classic", label: `${hard ? '🔥' : ''}第${Game.levelIdx + 1}关 ${LEVELS[Game.levelIdx].song}`, score: Game.score, elapsed: Game.elapsedSec(), win: true });
       const isLast = Game.levelIdx >= LEVELS.length - 1;
       const starStr = '⭐'.repeat(stars) + '✩'.repeat(3 - stars);
       this.showModal(`
@@ -580,7 +582,7 @@ const UI = {
         <h2 class="modal-title">${isLast ? t('allClearTitle') : t('winTitle')}</h2>
         <div class="stars">${starStr}</div>
         ${statsLine}
-        <p class="modal-sub">${tf('bestScore', { s: Save.data.best[Game.levelIdx] || Game.score })}</p>
+        <p class="modal-sub">${hard ? t('hardBonus') + ' · ' : ''}${tf('bestScore', { s: (hard ? Save.data.bestHard[Game.levelIdx] : Save.data.best[Game.levelIdx]) || Game.score })}</p>
         <div class="modal-actions">
           ${isLast ? '' : `<button class="btn primary" data-action="next-level">${t('nextLevel')}</button>`}
           <button class="btn ghost" data-action="share-score">${t('share')}</button>
@@ -722,6 +724,12 @@ const UI = {
         this.showSettingsModal();
         break;
       }
+      case 'cycle-difficulty': {
+        Save.data.settings.difficulty = Save.data.settings.difficulty === 'hard' ? 'normal' : 'hard';
+        Save.write();
+        this.showSettingsModal();
+        break;
+      }
       case 'reset-progress': {
         if (btn.dataset.armed) { Save.reset(); this.renderMenuStats(); this.showSettingsModal(); this.toast(t('toastReset')); }
         else { btn.dataset.armed = '1'; btn.textContent = t('resetConfirm'); }
@@ -750,12 +758,13 @@ const UI = {
     const items = LEVELS.map((L, i) => {
       const locked = i > unlocked;
       const stars = Save.data.stars[i] || 0;
+      const hardStars = Save.data.starsHard[i] || 0;
       const starStr = '⭐'.repeat(stars) + '✩'.repeat(3 - stars);
       return `<button class="level-card ${locked ? 'locked' : ''}" data-action="start-level" data-idx="${i}" ${locked ? 'disabled' : ''}>
         <span class="lv-num">${i + 1}</span>
         <span class="lv-song">${L.song}</span>
         <span class="lv-cn">${L.cn} · ${L.year}</span>
-        <span class="lv-stars">${locked ? '🔒' : starStr}</span>
+        <span class="lv-stars">${locked ? '🔒' : starStr}${hardStars ? `<span class="lv-hard">🔥${hardStars}</span>` : ''}</span>
       </button>`;
     }).join('');
     this.showModal(`
@@ -801,6 +810,10 @@ const UI = {
       <div class="setting-row">
         <span>语言 / Language</span>
         <button class="btn ghost small" data-action="cycle-lang">${Save.data.settings.lang === 'en' ? 'English' : '中文'}</button>
+      </div>
+      <div class="setting-row">
+        <span>${t('difficulty')}</span>
+        <button class="btn ghost small" data-action="cycle-difficulty">${Save.data.settings.difficulty === 'hard' ? t('difficultyHard') : t('difficultyNormal')}</button>
       </div>
       <div class="setting-row">
         <span>${t('reset')}</span>

@@ -139,6 +139,7 @@ console.log('--- 道具与计分 ---');
   void t1;
 }
 
+/* ---------- 4b. 评星 ---------- */
 console.log('--- 评星 ---');
 {
   Game.mode = 'classic';
@@ -146,6 +147,43 @@ console.log('--- 评星 ---');
   Game.timeLeft = 50; check('剩余 50% → 3 星', Game.stars() === 3);
   Game.timeLeft = 30; check('剩余 30% → 2 星', Game.stars() === 2);
   Game.timeLeft = 10; check('剩余 10% → 1 星', Game.stars() === 1);
+}
+
+/* ---------- 4c. 困难模式 ---------- */
+console.log('--- 困难模式 ---');
+{
+  Save.data.settings.difficulty = 'normal';
+  Game.startClassic(0); Game.stopTimer();
+  check('普通难度时间 = 关卡设定', Game.timeLeft === LEVELS[0].time && Game.difficulty === 'normal');
+  check('普通难度道具 3/2/1', Game.items.hint === 3 && Game.items.shuffle === 2 && Game.items.clock === 1);
+
+  Save.data.settings.difficulty = 'hard';
+  Game.startClassic(0); Game.stopTimer();
+  check('困难难度时间 ×0.75', Game.timeLeft === Math.round(LEVELS[0].time * 0.75));
+  check('困难难度道具 1/1/0', Game.items.hint === 1 && Game.items.shuffle === 1 && Game.items.clock === 0);
+  check('困难模式标记', Game.difficulty === 'hard');
+
+  /* 得分倍率：模拟一次消除 */
+  Game.combo = 0; Game.lastMatchAt = 0; Game.score = 0;
+  const p = Game.findAnyPair();
+  Game.selected = null;
+  const scoreBefore = Game.score;
+  Game.tryMatch(p[0]);
+  const res = Game.tryMatch(p[1]);
+  check('困难难度得分 ×1.5', res.status === 'matched' && res.gain === 15 && Game.score === scoreBefore + 15, res);
+
+  /* 无尽/每日不受难度影响 */
+  Game.startEndless(1); Game.stopTimer();
+  check('无尽模式无难度标记', Game.difficulty === 'normal' && Game.items.clock === 1);
+
+  /* 困难记录独立存储 */
+  Save.data = { unlocked: 0, stars: {}, best: {}, starsHard: {}, bestHard: {}, endlessBest: 0, daily: {}, achievements: [], history: [], settings: Save.data.settings };
+  Save.recordWin(0, 3, 600, true);
+  check('困难记录写入 starsHard/bestHard', Save.data.starsHard[0] === 3 && Save.data.bestHard[0] === 600 && (Save.data.stars[0] === undefined));
+  Save.recordWin(0, 2, 400, false);
+  check('普通记录写入 stars/best 且互不覆盖', Save.data.stars[0] === 2 && Save.data.best[0] === 400 && Save.data.starsHard[0] === 3);
+  check('两种难度都能解锁下一关', Save.data.unlocked === 1);
+  Save.data.settings.difficulty = 'normal';
 }
 
 /* ---------- 计时暂停/恢复 ---------- */

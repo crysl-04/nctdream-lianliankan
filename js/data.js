@@ -144,6 +144,8 @@ const I18N = {
     howto3: '3️⃣ 时间耗尽前清空棋盘！快速连消触发连击加分',
     howtoKeys: '⌨️ 键盘：方向键移动 · 空格选中 · H 提示 · Esc 取消',
     exitTitle: '确定要退出吗？', exitSub: '当前进度不会保存', exitYes: '退出 🏠', exitNo: '继续游戏 ▶',
+    difficulty: '难度', difficultyNormal: '🙂 普通', difficultyHard: '🔥 困难',
+    hardMode: '困难闯关', hardBonus: '🔥 困难加成 ×1.5 分',
     comboN: '{n} 连击 · {p}',
     menuStats: '闯关 {a}/{b} · ⭐ {c}/{d} · 无尽 {e} 轮 · 🏅 {f}/{g} · {daily}',
     dailyDoneStat: '今日挑战 ⭐{s} {p}分', dailyTodo: '今日挑战未完成'
@@ -191,6 +193,8 @@ const I18N = {
     howto3: '3️⃣ Clear the board before time runs out! Quick chains build combos',
     howtoKeys: '⌨️ Keyboard: arrows to move · Space to select · H for hint · Esc to cancel',
     exitTitle: 'Leave this game?', exitSub: 'Current progress will not be saved', exitYes: 'Leave 🏠', exitNo: 'Keep Playing ▶',
+    difficulty: 'Difficulty', difficultyNormal: '🙂 Normal', difficultyHard: '🔥 Hard',
+    hardMode: 'Hard Classic', hardBonus: '🔥 Hard bonus ×1.5 score',
     comboN: '{n} Combo · {p}',
     menuStats: 'Levels {a}/{b} · ⭐ {c}/{d} · Endless {e} · 🏅 {f}/{g} · {daily}',
     dailyDoneStat: 'Daily ⭐{s} {p} pts', dailyTodo: 'Daily not done'

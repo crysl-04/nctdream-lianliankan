@@ -255,6 +255,7 @@ button { font-family: inherit; cursor: pointer; border: none; background: none; 
 .lv-song { font-weight: 800; font-size: 13px; }
 .lv-cn { font-size: 11px; color: #8b98b5; }
 .lv-stars { font-size: 12px; letter-spacing: 1px; }
+.lv-hard { margin-left: 5px; padding: 1px 6px; border-radius: 999px; background: #fee2e2; color: #dc2626; font-size: 10px; font-weight: 800; }
 
 /* 成员图鉴 */
 .member-list { display: flex; flex-direction: column; gap: 10px; }
