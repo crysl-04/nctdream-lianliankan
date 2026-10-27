@@ -278,6 +278,39 @@ button { font-family: inherit; cursor: pointer; border: none; background: none; 
 .ach-text small { font-size: 11px; color: #8b98b5; }
 @media (max-width: 480px) { .ach-grid { grid-template-columns: 1fr; } }
 
+/* 战绩列表 */
+.hist-list { display: flex; flex-direction: column; gap: 8px; }
+.hist-row {
+  display: grid; grid-template-columns: 26px 1fr auto; grid-template-areas: "icon label score" "icon label time";
+  align-items: center; column-gap: 10px;
+  background: #f7fafd; border: 1.5px solid #e3ebf7; border-radius: 12px; padding: 8px 12px;
+}
+.hist-row.win { border-color: #bbf7d0; background: linear-gradient(120deg, #f0fdf4, #fff); }
+.hist-row.lose { filter: grayscale(.3); }
+.hist-icon { grid-area: icon; font-size: 18px; }
+.hist-label { grid-area: label; font-weight: 700; font-size: 13px; }
+.hist-score { grid-area: score; font-weight: 800; font-size: 13px; color: #22a06b; }
+.hist-row.lose .hist-score { color: #f87171; }
+.hist-time { grid-area: time; font-size: 10px; color: #8b98b5; justify-self: end; }
+
+/* 键盘光标 */
+.tile.cursor .tile-inner {
+  outline: 3px dashed var(--mcolor);
+  outline-offset: 2px;
+}
+
+/* 糖果主题 */
+body[data-theme="candy"] {
+  background: linear-gradient(160deg, #ffe0f0 0%, #f3e0ff 38%, #e0e7ff 72%, #dff9ff 100%);
+}
+body[data-theme="candy"] .btn.primary {
+  background: linear-gradient(135deg, #f472b6, #a78bfa);
+  box-shadow: 0 8px 20px rgba(244, 114, 182, .4);
+}
+body[data-theme="candy"] #timer-fill { background: linear-gradient(90deg, #f472b6, #a78bfa); }
+body[data-theme="candy"] #timer-fill.danger { background: linear-gradient(90deg, #f87171, #fb923c); }
+body[data-theme="candy"] .hud-mode { color: #db2777; }
+
 /* Toast */
 #toast {
   position: fixed; z-index: 120; bottom: 32px; left: 50%; transform: translateX(-50%) translateY(20px);

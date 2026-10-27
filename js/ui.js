@@ -16,6 +16,7 @@ const UI = {
       screenMenu: $('screen-menu'), screenGame: $('screen-game'),
       btnClassic: $('btn-classic'), btnEndless: $('btn-endless'),
       btnDaily: $('btn-daily'), btnAchievements: $('btn-achievements'),
+      btnHistory: $('btn-history'),
       btnLevels: $('btn-levels'), btnAbout: $('btn-about'), btnSettings: $('btn-settings'),
       menuStats: $('menu-stats'),
       btnExit: $('btn-exit'), hudLevelName: $('hud-level-name'), hudMode: $('hud-mode'),
@@ -33,12 +34,60 @@ const UI = {
     Save.load();
     SFX.enabled = Save.data.settings.sfx;
     SFX.musicOn = Save.data.settings.music;
+    this.applyTheme();
     this.updateSoundIcon();
 
     this.spawnBgDeco();
     this.bindEvents();
+    this.bindKeyboard();
     this.renderMenuStats();
     this.showScreen('menu');
+  },
+
+  applyTheme() {
+    document.body.dataset.theme = Save.data.settings.theme === 'candy' ? 'candy' : 'dream';
+  },
+
+  /* 键盘操作：方向键移动光标，空格/回车选中，H 提示，Esc 取消 */
+  bindKeyboard() {
+    document.addEventListener('keydown', e => {
+      if (e.key === 'Escape') {
+        if (!this.els.modal.classList.contains('hidden')) { this.closeModal(); return; }
+        if (!this.els.screenGame.classList.contains('hidden') && Game.selected) {
+          Game.selected = null;
+          this.updateSelection();
+        }
+        return;
+      }
+      if (this.els.screenGame.classList.contains('hidden')) return;
+      if (!this.els.modal.classList.contains('hidden')) return;
+      if (Game.state !== 'playing') return;
+
+      const move = (dr, dc) => {
+        if (!this.cursor) this.cursor = { r: Math.ceil(Game.rows / 2), c: Math.ceil(Game.cols / 2) };
+        this.cursor.r = Math.min(Game.rows, Math.max(1, this.cursor.r + dr));
+        this.cursor.c = Math.min(Game.cols, Math.max(1, this.cursor.c + dc));
+        this.renderCursor();
+        e.preventDefault();
+      };
+      switch (e.key) {
+        case 'ArrowUp': move(-1, 0); break;
+        case 'ArrowDown': move(1, 0); break;
+        case 'ArrowLeft': move(0, -1); break;
+        case 'ArrowRight': move(0, 1); break;
+        case ' ': case 'Enter': {
+          if (!this.cursor) break;
+          const cell = Game.cellAt[this.cursor.r + ',' + this.cursor.c];
+          if (cell && cell.alive) { e.preventDefault(); this.onTileClick(cell); }
+          break;
+        }
+        case 'h': case 'H': this.hintAction(); break;
+      }
+    });
+  },
+
+  renderCursor() {
+    for (const [t, el] of this.tileEls) el.classList.toggle('cursor', !!this.cursor && t.r === this.cursor.r && t.c === this.cursor.c);
   },
 
   bindEvents() {
@@ -46,6 +95,7 @@ const UI = {
     this.els.btnEndless.addEventListener('click', () => { SFX.ensure(); this.startEndlessRun(); });
     this.els.btnDaily.addEventListener('click', () => { SFX.ensure(); this.startDailyRun(); });
     this.els.btnAchievements.addEventListener('click', () => this.showAchievementsModal());
+    this.els.btnHistory.addEventListener('click', () => this.showHistoryModal());
     this.els.btnLevels.addEventListener('click', () => this.showLevelsModal());
     this.els.btnAbout.addEventListener('click', () => this.showAboutModal());
     this.els.btnSettings.addEventListener('click', () => this.showSettingsModal());
@@ -127,6 +177,7 @@ const UI = {
     const board = this.els.board;
     board.innerHTML = '';
     this.tileEls.clear();
+    this.cursor = null;
     const R = Game.R(), C = Game.C();
     board.style.gridTemplateColumns = `repeat(${C}, var(--cell))`;
     board.style.gridTemplateRows = `repeat(${R}, var(--cell))`;
@@ -430,6 +481,22 @@ const UI = {
       <div class="modal-actions"><button class="btn ghost" data-action="close-modal">关闭</button></div>`);
   },
 
+  showHistoryModal() {
+    const h = Save.data.history;
+    const items = h.length
+      ? h.map(e => `<div class="hist-row ${e.win ? 'win' : 'lose'}">
+          <span class="hist-icon">${e.mode === 'daily' ? '📅' : e.mode === 'endless' ? '♾️' : '🚀'}</span>
+          <span class="hist-label">${e.label}</span>
+          <span class="hist-score">${e.win ? '' : '未完成 · '}${e.score} 分</span>
+          <span class="hist-time">${e.time}</span>
+        </div>`).join('')
+      : '<p class="modal-sub">还没有战绩，快去玩一局吧！</p>';
+    this.showModal(`
+      <h2 class="modal-title">最近战绩 📊</h2>
+      <div class="hist-list">${items}</div>
+      <div class="modal-actions"><button class="btn ghost" data-action="close-modal">关闭</button></div>`);
+  },
+
   /* ---------- 胜负 ---------- */
   onWin() {
     const bonus = Game.finishWin();
@@ -443,6 +510,7 @@ const UI = {
     if (Game.mode === 'classic') {
       const stars = Game.stars();
       Save.recordWin(Game.levelIdx, stars, Game.score);
+      Save.pushHistory({ mode: 'classic', label: `第${Game.levelIdx + 1}关 ${LEVELS[Game.levelIdx].song}`, score: Game.score, win: true });
       const isLast = Game.levelIdx >= LEVELS.length - 1;
       const starStr = '⭐'.repeat(stars) + '✩'.repeat(3 - stars);
       this.showModal(`
@@ -460,6 +528,7 @@ const UI = {
     } else if (Game.mode === 'daily') {
       const stars = Game.stars();
       const isNewBest = Save.recordDaily(Game.dailyDate, Game.score, stars);
+      Save.pushHistory({ mode: 'daily', label: `每日挑战 ${Game.dailyDate}`, score: Game.score, win: true });
       this.checkAchievements('daily');
       const starStr = '⭐'.repeat(stars) + '✩'.repeat(3 - stars);
       this.showModal(`
@@ -475,6 +544,7 @@ const UI = {
         </div>`);
     } else {
       Save.recordEndless(Game.boardsCleared, Game.score);
+      Save.pushHistory({ mode: 'endless', label: `无尽 ${Game.boardsCleared} 轮`, score: Game.score, win: true });
       this.checkAchievements('endless');
       this.showModal(`
         <div class="win-face">${avatarSVG(MEMBERS[(Game.boardsCleared) % MEMBERS.length], 90)}</div>
@@ -491,6 +561,7 @@ const UI = {
   onLose() {
     SFX.lose();
     if (Game.mode === 'classic') {
+      Save.pushHistory({ mode: 'classic', label: `第${Game.levelIdx + 1}关 ${LEVELS[Game.levelIdx].song}`, score: Game.score, win: false });
       this.showModal(`
         <div class="lose-face">⏰</div>
         <h2 class="modal-title">时间到啦！</h2>
@@ -575,6 +646,13 @@ const UI = {
         this.showSettingsModal();
         break;
       }
+      case 'cycle-theme': {
+        Save.data.settings.theme = Save.data.settings.theme === 'candy' ? 'dream' : 'candy';
+        Save.write();
+        this.applyTheme();
+        this.showSettingsModal();
+        break;
+      }
       case 'reset-progress': {
         if (btn.dataset.armed) { Save.reset(); this.renderMenuStats(); this.showSettingsModal(); this.toast('进度已重置'); }
         else { btn.dataset.armed = '1'; btn.textContent = '⚠️ 再点一次确认重置'; }
@@ -621,6 +699,7 @@ const UI = {
   },
 
   showSettingsModal() {
+    const themeNames = { dream: '🌈 梦幻星河', candy: '🍬 粉甜糖果' };
     this.showModal(`
       <h2 class="modal-title">设置 ⚙️</h2>
       <div class="setting-row">
@@ -630,6 +709,10 @@ const UI = {
       <div class="setting-row">
         <span>背景音乐</span>
         <button class="switch ${SFX.musicOn ? 'on' : ''}" data-action="toggle-music">${SFX.musicOn ? 'ON' : 'OFF'}</button>
+      </div>
+      <div class="setting-row">
+        <span>主题皮肤</span>
+        <button class="btn ghost small" data-action="cycle-theme">${themeNames[Save.data.settings.theme] || themeNames.dream}</button>
       </div>
       <div class="setting-row">
         <span>重置所有进度</span>

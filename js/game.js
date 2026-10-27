@@ -308,7 +308,7 @@ const Game = {
 /* ---------- 存档 ---------- */
 const Save = {
   KEY: 'nct_dream_llk_v1',
-  data: { unlocked: 0, stars: {}, best: {}, endlessBest: 0, daily: {}, achievements: [], settings: { sfx: true, music: true } },
+  data: { unlocked: 0, stars: {}, best: {}, endlessBest: 0, daily: {}, achievements: [], history: [], settings: { sfx: true, music: true, theme: 'dream' } },
 
   load() {
     try {
@@ -316,9 +316,10 @@ const Save = {
       if (raw) {
         const d = JSON.parse(raw);
         this.data = Object.assign(this.data, d);
-        this.data.settings = Object.assign({ sfx: true, music: true }, d.settings || {});
+        this.data.settings = Object.assign({ sfx: true, music: true, theme: 'dream' }, d.settings || {});
         this.data.daily = d.daily || {};
         this.data.achievements = d.achievements || [];
+        this.data.history = d.history || [];
       }
     } catch (e) { /* 忽略损坏存档 */ }
     return this.data;
@@ -326,6 +327,13 @@ const Save = {
 
   write() {
     try { localStorage.setItem(this.KEY, JSON.stringify(this.data)); } catch (e) { /* 隐私模式等 */ }
+  },
+
+  pushHistory(entry) {
+    const h = this.data.history;
+    h.unshift(Object.assign({ time: new Date().toLocaleString('zh-CN', { hour12: false }) }, entry));
+    if (h.length > 12) h.length = 12;
+    this.write();
   },
 
   recordWin(levelIdx, stars, score) {
@@ -372,7 +380,7 @@ const Save = {
   },
 
   reset() {
-    this.data = { unlocked: 0, stars: {}, best: {}, endlessBest: 0, daily: {}, achievements: [], settings: this.data.settings };
+    this.data = { unlocked: 0, stars: {}, best: {}, endlessBest: 0, daily: {}, achievements: [], history: [], settings: this.data.settings };
     this.write();
   }
 };
