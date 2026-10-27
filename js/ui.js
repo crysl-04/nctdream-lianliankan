@@ -16,7 +16,7 @@ const UI = {
       screenMenu: $('screen-menu'), screenGame: $('screen-game'),
       btnClassic: $('btn-classic'), btnEndless: $('btn-endless'),
       btnDaily: $('btn-daily'), btnAchievements: $('btn-achievements'),
-      btnHistory: $('btn-history'),
+      btnHistory: $('btn-history'), btnHowto: $('btn-howto'),
       btnLevels: $('btn-levels'), btnAbout: $('btn-about'), btnSettings: $('btn-settings'),
       menuStats: $('menu-stats'),
       btnExit: $('btn-exit'), hudLevelName: $('hud-level-name'), hudMode: $('hud-mode'),
@@ -49,7 +49,7 @@ const UI = {
   applyStaticI18n() {
     const map = {
       'btn-classic': 'startClassic', 'btn-daily': 'startDaily', 'btn-endless': 'startEndless',
-      'btn-levels': 'levels', 'btn-about': 'about', 'btn-achievements': 'achievements',
+      'btn-levels': 'levels', 'btn-about': 'about', 'btn-howto': 'howto', 'btn-achievements': 'achievements',
       'btn-history': 'history', 'btn-settings': 'settings',
       'menu-slogan': 'slogan', 'menu-foot': 'menuFoot',
       'hud-score-label': 'score', 'hud-combo-label': 'combo',
@@ -61,7 +61,7 @@ const UI = {
       if (el) el.textContent = t(map[id]);
     }
     const ver = document.getElementById('menu-version');
-    if (ver) ver.textContent = 'v1.7 · Made with 💚 for NCTzens';
+    if (ver) ver.textContent = 'v1.8 · Made with 💚 for NCTzens';
     this.renderMenuStats(); /* 每日按钮文案也依赖语言 */
   },
 
@@ -117,6 +117,7 @@ const UI = {
     this.els.btnDaily.addEventListener('click', () => { SFX.ensure(); this.startDailyRun(); });
     this.els.btnAchievements.addEventListener('click', () => this.showAchievementsModal());
     this.els.btnHistory.addEventListener('click', () => this.showHistoryModal());
+    this.els.btnHowto.addEventListener('click', () => this.showHowtoModal());
     this.els.btnLevels.addEventListener('click', () => this.showLevelsModal());
     this.els.btnAbout.addEventListener('click', () => this.showAboutModal());
     this.els.btnSettings.addEventListener('click', () => this.showSettingsModal());
@@ -707,6 +708,21 @@ const UI = {
         break;
       }
     }
+  },
+
+  showHowtoModal() {
+    this.showModal(`
+      <h2 class="modal-title">${t('howtoTitle')}</h2>
+      <div class="howto">
+        <p>${t('howto1')}</p>
+        <p>${t('howto2')}</p>
+        <p>${t('howto3')}</p>
+        <p class="howto-keys">${t('howtoKeys')}</p>
+      </div>
+      <div class="modal-actions">
+        <button class="btn primary" data-action="start-level" data-idx="0">${t('startClassic')}</button>
+        <button class="btn ghost" data-action="close-modal">${t('closeModal')}</button>
+      </div>`);
   },
 
   showLevelsModal() {

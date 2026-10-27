@@ -284,7 +284,10 @@ button { font-family: inherit; cursor: pointer; border: none; background: none; 
 
 /* 成就 */
 .ach-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
-.ach-card {
+/* 玩法说明 */
+.howto { display: flex; flex-direction: column; gap: 12px; font-size: 14.5px; line-height: 1.55; }
+.howto p { background: #f7fafd; border: 1.5px solid #e3ebf7; border-radius: 12px; padding: 10px 14px; }
+.howto .howto-keys { background: #f0fdf4; border-color: #bbf7d0; font-size: 12.5px; color: #166534; }.ach-card {
   display: flex; align-items: center; gap: 10px;
   border-radius: 14px; padding: 10px 12px;
 }

@@ -138,6 +138,11 @@ const I18N = {
     toastCopyFail: '复制失败，请手动截图分享', toastReset: '进度已重置',
     toastAch: '🏅 成就解锁：{s}',
     toastLandscape: '📱 手机横屏体验更佳',
+    howto: '❓ 玩法说明', howtoTitle: '玩法说明 ❓',
+    howto1: '1️⃣ 点击两张<b>相同的成员卡片</b>',
+    howto2: '2️⃣ 若它们能用<b>不超过 2 个转折</b>的路径连通（可绕到棋盘外面），即可消除',
+    howto3: '3️⃣ 时间耗尽前清空棋盘！快速连消触发连击加分',
+    howtoKeys: '⌨️ 键盘：方向键移动 · 空格选中 · H 提示 · Esc 取消',
     comboN: '{n} 连击 · {p}',
     menuStats: '闯关 {a}/{b} · ⭐ {c}/{d} · 无尽 {e} 轮 · 🏅 {f}/{g} · {daily}',
     dailyDoneStat: '今日挑战 ⭐{s} {p}分', dailyTodo: '今日挑战未完成'
@@ -179,6 +184,11 @@ const I18N = {
     toastCopyFail: 'Copy failed — screenshot instead', toastReset: 'Progress reset',
     toastAch: '🏅 Unlocked: {s}',
     toastLandscape: '📱 Rotate your phone for a better view',
+    howto: '❓ How to Play', howtoTitle: 'How to Play ❓',
+    howto1: '1️⃣ Tap two <b>matching member cards</b>',
+    howto2: '2️⃣ They clear if connected by a path with <b>at most 2 turns</b> (you may route around the board)',
+    howto3: '3️⃣ Clear the board before time runs out! Quick chains build combos',
+    howtoKeys: '⌨️ Keyboard: arrows to move · Space to select · H for hint · Esc to cancel',
     comboN: '{n} Combo · {p}',
     menuStats: 'Levels {a}/{b} · ⭐ {c}/{d} · Endless {e} · 🏅 {f}/{g} · {daily}',
     dailyDoneStat: 'Daily ⭐{s} {p} pts', dailyTodo: 'Daily not done'
