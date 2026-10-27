@@ -80,11 +80,13 @@ const SFX = {
     [440, 392, 330, 262].forEach((f, k) => this.tone(f, 0.3, 'triangle', 0.3, k * 0.2));
   },
 
-  /* 背景音乐：双段旋律交替（A/B），C 大调五声音阶 */
+  /* 背景音乐：三段旋律轮换（A-B-C-A），C 大调五声音阶 */
   MELODY_A: [523, 659, 784, 659, 587, 698, 880, 698, 523, 659, 784, 1047, 988, 784, 659, 587],
   BASS_A:   [262, 0,   196, 0,   220, 0,   175, 0,   262, 0,   196, 0,    165, 0,   196, 0],
   MELODY_B: [784, 880, 1047, 880, 784, 659, 587, 659, 523, 587, 659, 523, 440, 523, 587, 659],
   BASS_B:   [196, 0,   262, 0,   175, 0,   220, 0,   131, 0,   165, 0,   196, 0,   175, 0],
+  MELODY_C: [659, 784, 880, 1047, 880, 784, 659, 523, 587, 659, 784, 659, 587, 523, 440, 523],
+  BASS_C:   [165, 0,   220, 0,    262, 0,   196, 0,   175, 0,   220, 0,   131, 0,   165, 0],
 
   startMusic() {
     this.ensure();
@@ -93,9 +95,9 @@ const SFX = {
     this.musicTimer = setInterval(() => {
       if (!this.enabled) return;
       const s = this.step % 16;
-      const useB = Math.floor(this.step / 16) % 4 >= 2; // AABB 循环
-      const melody = useB ? this.MELODY_B : this.MELODY_A;
-      const bass = useB ? this.BASS_B : this.BASS_A;
+      const cyc = Math.floor(this.step / 16) % 4; // A-B-C-A 循环
+      const melody = cyc === 1 ? this.MELODY_B : cyc === 2 ? this.MELODY_C : this.MELODY_A;
+      const bass = cyc === 1 ? this.BASS_B : cyc === 2 ? this.BASS_C : this.BASS_A;
       if (melody[s]) this.tone(melody[s], 0.2, 'triangle', 0.22, 0, this.musicGain);
       if (bass[s])   this.tone(bass[s],   0.32, 'sine',    0.3,  0, this.musicGain);
       if (s % 4 === 2) this.tone(330, 0.05, 'square', 0.06, 0, this.musicGain);

@@ -61,7 +61,7 @@ const UI = {
       if (el) el.textContent = t(map[id]);
     }
     const ver = document.getElementById('menu-version');
-    if (ver) ver.textContent = 'v1.6 · Made with 💚 for NCTzens';
+    if (ver) ver.textContent = 'v1.7 · Made with 💚 for NCTzens';
     this.renderMenuStats(); /* 每日按钮文案也依赖语言 */
   },
 
@@ -184,6 +184,10 @@ const UI = {
     SFX.ensure();
     SFX.startFx();
     if (SFX.musicOn) SFX.startMusic();
+    /* 手机竖屏 + 大棋盘时提示横屏 */
+    if (window.innerHeight > window.innerWidth && this.cellSize < 30) {
+      setTimeout(() => this.toast(t('toastLandscape')), 900);
+    }
   },
 
   exitToMenu() {

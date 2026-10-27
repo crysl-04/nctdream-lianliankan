@@ -93,6 +93,7 @@ button { font-family: inherit; cursor: pointer; border: none; background: none; 
 .cal-day small { font-size: 9px; color: #8b98b5; }
 .cal-day.done { background: rgba(255,255,255,.85); box-shadow: 0 3px 8px rgba(251,191,36,.25); }
 .cal-day.today { outline: 2px solid #38bdf8; outline-offset: 1px; }
+.cal-day.today.done { animation: bob 2s ease-in-out infinite; }
 .menu-foot { color: #8b98b5; font-size: 12px; }
 
 /* ---------- 游戏界面 ---------- */

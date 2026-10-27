@@ -137,6 +137,7 @@ const I18N = {
     toastRestart: '已重新开始 ↻', toastCopied: '战绩已复制，去分享吧 📋',
     toastCopyFail: '复制失败，请手动截图分享', toastReset: '进度已重置',
     toastAch: '🏅 成就解锁：{s}',
+    toastLandscape: '📱 手机横屏体验更佳',
     comboN: '{n} 连击 · {p}',
     menuStats: '闯关 {a}/{b} · ⭐ {c}/{d} · 无尽 {e} 轮 · 🏅 {f}/{g} · {daily}',
     dailyDoneStat: '今日挑战 ⭐{s} {p}分', dailyTodo: '今日挑战未完成'
@@ -177,6 +178,7 @@ const I18N = {
     toastRestart: 'Restarted ↻', toastCopied: 'Result copied — share it! 📋',
     toastCopyFail: 'Copy failed — screenshot instead', toastReset: 'Progress reset',
     toastAch: '🏅 Unlocked: {s}',
+    toastLandscape: '📱 Rotate your phone for a better view',
     comboN: '{n} Combo · {p}',
     menuStats: 'Levels {a}/{b} · ⭐ {c}/{d} · Endless {e} · 🏅 {f}/{g} · {daily}',
     dailyDoneStat: 'Daily ⭐{s} {p} pts', dailyTodo: 'Daily not done'
