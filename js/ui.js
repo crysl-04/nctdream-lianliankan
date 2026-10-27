@@ -864,9 +864,12 @@ const UI = {
       e: d.endlessBest, f: d.achievements.length, g: ACHIEVEMENTS.length,
       daily: dailyStr
     });
-    /* 今日已打卡时更新每日挑战按钮文案 */
+    /* 今日已打卡时更新每日挑战按钮文案；装扮按钮显示收集进度 */
     if (this.els.btnDaily) {
       this.els.btnDaily.textContent = today ? t('dailyDone') : t('startDaily');
+    }
+    if (this.els.btnCollection) {
+      this.els.btnCollection.textContent = `${t('collection')} ${Save.data.collection.length}/${LEVELS.length}`;
     }
     this.renderDailyCal();
   },
