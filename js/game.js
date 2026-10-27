@@ -271,21 +271,42 @@ const Game = {
     return true;
   },
 
-  /* ---------- 计时 ---------- */
+  /* ---------- 计时（页面隐藏时自动暂停） ---------- */
   startTimer(seconds) {
     this.timeLeft = seconds;
+    this._paused = false;
+    this._startInterval();
+  },
+
+  _startInterval() {
     this.stopTimer();
-    this.timerId = setInterval(() => {
-      if (this.state !== 'playing') return;
-      this.timeLeft--;
-      if (typeof UI !== 'undefined' && UI.onTick) UI.onTick();
-      if (this.timeLeft <= 10 && this.timeLeft > 0 && typeof SFX !== 'undefined') SFX.tick();
-      if (this.timeLeft <= 0) {
-        this.stopTimer();
-        this.state = 'lost';
-        if (typeof UI !== 'undefined' && UI.onLose) UI.onLose();
-      }
-    }, 1000);
+    this.timerId = setInterval(() => this._tick(), 1000);
+  },
+
+  _tick() {
+    if (this.state !== 'playing') return;
+    this.timeLeft--;
+    if (typeof UI !== 'undefined' && UI.onTick) UI.onTick();
+    if (this.timeLeft <= 10 && this.timeLeft > 0 && typeof SFX !== 'undefined') SFX.tick();
+    if (this.timeLeft <= 0) {
+      this.stopTimer();
+      this.state = 'lost';
+      if (typeof UI !== 'undefined' && UI.onLose) UI.onLose();
+    }
+  },
+
+  pauseTimer() {
+    if (this.state === 'playing' && this.timerId) {
+      this.stopTimer();
+      this._paused = true;
+    }
+  },
+
+  resumeTimer() {
+    if (this._paused && this.state === 'playing') {
+      this._paused = false;
+      this._startInterval();
+    }
   },
 
   stopTimer() {

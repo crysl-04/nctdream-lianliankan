@@ -148,6 +148,24 @@ console.log('--- 评星 ---');
   Game.timeLeft = 10; check('剩余 10% → 1 星', Game.stars() === 1);
 }
 
+/* ---------- 计时暂停/恢复 ---------- */
+console.log('--- 计时暂停/恢复 ---');
+{
+  Game.startClassic(0);
+  check('计时器运行中', Game.timerId !== null && Game._paused === false);
+  Game.pauseTimer();
+  check('暂停后计时器停止', Game.timerId === null && Game._paused === true);
+  Game.resumeTimer();
+  check('恢复后计时器重启', Game.timerId !== null && Game._paused === false);
+  const before = Game.timeLeft;
+  Game._tick();
+  check('tick 正常递减', Game.timeLeft === before - 1);
+  Game.stopTimer();
+  Game.pauseTimer();
+  check('无计时器时暂停为安全空操作', Game._paused === false && Game.timerId === null);
+  Game._paused = false;
+}
+
 /* ---------- 5. 每日挑战 ---------- */
 console.log('--- 每日挑战 ---');
 {

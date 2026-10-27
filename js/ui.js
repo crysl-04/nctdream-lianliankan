@@ -61,7 +61,7 @@ const UI = {
       if (el) el.textContent = t(map[id]);
     }
     const ver = document.getElementById('menu-version');
-    if (ver) ver.textContent = 'v1.8 · Made with 💚 for NCTzens';
+    if (ver) ver.textContent = 'v1.9 · Made with 💚 for NCTzens';
     this.renderMenuStats(); /* 每日按钮文案也依赖语言 */
   },
 
@@ -121,7 +121,20 @@ const UI = {
     this.els.btnLevels.addEventListener('click', () => this.showLevelsModal());
     this.els.btnAbout.addEventListener('click', () => this.showAboutModal());
     this.els.btnSettings.addEventListener('click', () => this.showSettingsModal());
-    this.els.btnExit.addEventListener('click', () => this.exitToMenu());
+    this.els.btnExit.addEventListener('click', () => {
+      /* 局中退出需确认，防误触 */
+      if (Game.state === 'playing' && Game.remaining() > 0 && Game.remaining() < Game.tiles.length) {
+        this.showModal(`
+          <h2 class="modal-title">${t('exitTitle')}</h2>
+          <p class="modal-sub">${t('exitSub')}</p>
+          <div class="modal-actions">
+            <button class="btn primary" data-action="close-modal">${t('exitNo')}</button>
+            <button class="btn ghost" data-action="menu">${t('exitYes')}</button>
+          </div>`);
+      } else {
+        this.exitToMenu();
+      }
+    });
     this.els.btnSound.addEventListener('click', () => {
       SFX.ensure();
       Save.data.settings.sfx = SFX.toggleSfx();
@@ -222,6 +235,13 @@ const UI = {
       btn.addEventListener('click', () => this.onTileClick(t));
       board.appendChild(btn);
       this.tileEls.set(t, btn);
+    }
+    /* 入场动画：按序号错峰弹出 */
+    let idx = 0;
+    for (const el of this.tileEls.values()) {
+      el.classList.add('enter');
+      el.style.animationDelay = Math.min(idx * 8, 640) + 'ms';
+      idx++;
     }
     this.layoutBoard();
   },

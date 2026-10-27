@@ -17,6 +17,12 @@ window.addEventListener('resize', () => {
   UI.layoutBoard();
 });
 
+/* 切走页面/回到页面时自动暂停与恢复计时 */
+document.addEventListener('visibilitychange', () => {
+  if (document.hidden) Game.pauseTimer();
+  else Game.resumeTimer();
+});
+
 /* PWA Service Worker（失败静默，不影响游戏） */
 if ('serviceWorker' in navigator) {
   window.addEventListener('load', () => {

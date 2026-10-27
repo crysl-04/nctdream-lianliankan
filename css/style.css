@@ -141,10 +141,9 @@ button { font-family: inherit; cursor: pointer; border: none; background: none; 
 #board.shuffling { animation: shuffleSpin .5s ease; }
 @keyframes shuffleSpin { 50% { transform: scale(.96) rotate(1.2deg); filter: hue-rotate(20deg); } }
 
-.tile {
-  width: var(--cell); height: var(--cell); padding: 2px; position: relative;
-  transition: transform .12s, filter .12s;
-}
+.tile { width: var(--cell); height: var(--cell); padding: 2px; position: relative; transition: transform .12s, filter .12s; }
+.tile.enter { animation: tileIn .32s ease backwards; }
+@keyframes tileIn { from { transform: scale(.3); opacity: 0; } }
 .tile-inner {
   width: 100%; height: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center;
   background: rgba(255,255,255,.92); border: 2.5px solid var(--mcolor); border-radius: 14px;
