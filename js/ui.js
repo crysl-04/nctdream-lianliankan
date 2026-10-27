@@ -60,6 +60,8 @@ const UI = {
       const el = document.getElementById(id);
       if (el) el.textContent = t(map[id]);
     }
+    const ver = document.getElementById('menu-version');
+    if (ver) ver.textContent = 'v1.6 · Made with 💚 for NCTzens';
     this.renderMenuStats(); /* 每日按钮文案也依赖语言 */
   },
 
