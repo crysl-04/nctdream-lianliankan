@@ -442,18 +442,27 @@ const UI = {
       if (Game.maxCombo >= 5) ids.push('combo5');
       if (Game.maxCombo >= 10) ids.push('combo10');
       if (Game.score > 500) ids.push('score500');
+      if (Game.score > 1000) ids.push('score1000');
       if (Game.itemsUsed === 0) ids.push('no_item');
+      if (Game.elapsedSec() > 600) ids.push('marathon');
+      const hour = new Date().getHours();
+      if (hour >= 0 && hour < 5) ids.push('night_owl');
     }
     if (context === 'win' && Game.mode === 'classic') {
       if (Game.levelIdx >= 6) ids.push('level7');
       if (Game.levelIdx >= LEVELS.length - 1) ids.push('clear_all');
     }
-    if (context === 'daily') ids.push('daily');
+    if (context === 'daily') {
+      ids.push('daily');
+      if (Save.dailyStreak() >= 3) ids.push('streak3');
+    }
     if (context === 'endless') {
       if (Game.boardsCleared >= 3) ids.push('endless3');
       if (Game.boardsCleared >= 6) ids.push('endless6');
+      if (Game.boardsCleared >= 10) ids.push('endless10');
     }
     if (totalStars >= 12) ids.push('stars12');
+    if (totalStars >= 30) ids.push('stars30');
     if (LEVELS.length > 0 && Object.values(d.stars).filter(s => s === 3).length >= LEVELS.length) ids.push('all_stars');
     const fresh = Save.unlockAchievements(ids);
     if (fresh.length) {
@@ -461,9 +470,15 @@ const UI = {
         const a = ACHIEVEMENTS.find(x => x.id === id);
         return a ? `${a.icon}${a.name}` : id;
       });
+      SFX.achieveFx();
       setTimeout(() => this.toast('🏅 成就解锁：' + names.join('、')), 600);
       this.renderMenuStats();
     }
+  },
+
+  /* 每日挑战连续打卡天数（以今天或昨天为终点） */
+  dailyStreak() {
+    return Save.dailyStreak();
   },
 
   showAchievementsModal() {
@@ -728,6 +743,10 @@ const UI = {
     const dailyStr = today ? `今日挑战 ⭐${today.stars} ${today.score}分` : '今日挑战未完成';
     this.els.menuStats.textContent =
       `闯关 ${Math.min(d.unlocked + 1, LEVELS.length)}/${LEVELS.length} · ⭐ ${totalStars}/${LEVELS.length * 3} · 无尽 ${d.endlessBest} 轮 · 🏅 ${d.achievements.length}/${ACHIEVEMENTS.length} · ${dailyStr}`;
+    /* 今日已打卡时更新每日挑战按钮文案 */
+    if (this.els.btnDaily) {
+      this.els.btnDaily.textContent = today ? '✅ 今日已完成 · 再来一局' : '📅 每日挑战';
+    }
     this.renderDailyCal();
   },
 

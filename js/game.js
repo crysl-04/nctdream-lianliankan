@@ -371,6 +371,24 @@ const Save = {
     return rec ? rec : null;
   },
 
+  /* 每日挑战连续打卡天数（以今天或昨天为终点，全部用本地日期） */
+  dailyStreak() {
+    const keys = Object.keys(this.data.daily).sort();
+    if (!keys.length) return 0;
+    const dayMs = 86400000;
+    const dayNum = s => Math.floor(new Date(s + 'T00:00:00').getTime() / dayMs);
+    const now = new Date();
+    const today = Math.floor(new Date(now.getFullYear(), now.getMonth(), now.getDate()).getTime() / dayMs);
+    let streak = 0;
+    let expect = dayNum(keys[keys.length - 1]) === today ? today : today - 1;
+    for (let i = keys.length - 1; i >= 0; i--) {
+      const dn = dayNum(keys[i]);
+      if (dn === expect) { streak++; expect--; }
+      else if (dn < expect) break;
+    }
+    return streak;
+  },
+
   /* 成就：返回本次新解锁的成就列表 */
   unlockAchievements(ids) {
     const got = this.data.achievements;

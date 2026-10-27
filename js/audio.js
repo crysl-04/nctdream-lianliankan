@@ -66,6 +66,11 @@ const SFX = {
     const seq = [523, 659, 784, 1047, 784, 1047, 1319];
     seq.forEach((f, k) => this.tone(f, 0.22, 'triangle', 0.34, k * 0.13));
   },
+  achieveFx() {
+    /* 成就解锁：闪亮上行琶音 */
+    [659, 831, 988, 1319].forEach((f, k) => this.tone(f, 0.16, 'sine', 0.3, k * 0.09));
+    this.tone(1976, 0.24, 'sine', 0.18, 0.38);
+  },
   lose() {
     [440, 392, 330, 262].forEach((f, k) => this.tone(f, 0.3, 'triangle', 0.3, k * 0.2));
   },

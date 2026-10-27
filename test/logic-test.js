@@ -197,7 +197,34 @@ console.log('--- 成就与存档 ---');
   check('重复解锁返回空', fresh2.length === 0);
 
   check('成就定义无重复 id', new Set(ACHIEVEMENTS.map(a => a.id)).size === ACHIEVEMENTS.length);
+  check('成就数量 ≥ 18', ACHIEVEMENTS.length >= 18);
   check('今日日期键格式', /^\d{4}-\d{2}-\d{2}$/.test(todayKey()));
+
+  /* 连续打卡天数（Save.dailyStreak，以今天或昨天为终点，本地日期） */
+  const keyOf = offset => {
+    const d = new Date();
+    d.setDate(d.getDate() - offset);
+    return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
+  };
+  Save.data.daily = {
+    [keyOf(0)]: { score: 1, stars: 1 },
+    [keyOf(1)]: { score: 2, stars: 1 },
+    [keyOf(2)]: { score: 3, stars: 1 }
+  };
+  check('连续打卡 3 天可被识别', Save.dailyStreak() === 3);
+  Save.data.daily = {
+    [keyOf(0)]: { score: 1, stars: 1 },
+    [keyOf(5)]: { score: 2, stars: 1 }
+  };
+  check('断签不累计（今天+5天前 → 1 天）', Save.dailyStreak() === 1);
+  Save.data.daily = {
+    [keyOf(1)]: { score: 1, stars: 1 },
+    [keyOf(2)]: { score: 2, stars: 1 },
+    [keyOf(3)]: { score: 3, stars: 1 }
+  };
+  check('今天未打但昨天连续（以昨天为终点 → 3 天）', Save.dailyStreak() === 3);
+  Save.data.daily = { [keyOf(4)]: { score: 1, stars: 1 } };
+  check('断签太久归零', Save.dailyStreak() === 0);
 }
 
 console.log(failures === 0 ? '\n🎉 全部测试通过' : `\n💥 ${failures} 个测试失败`);

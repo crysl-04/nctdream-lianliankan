@@ -334,6 +334,17 @@ body[data-theme="candy"] .hud-mode { color: #db2777; }
 
 /* ---------- 手机适配 ---------- */
 #item-bar { margin-bottom: env(safe-area-inset-bottom, 0); }
+/* 矮屏（含手机横屏）：菜单改双列，避免溢出 */
+@media (max-height: 780px) and (max-width: 700px) {
+  #screen-menu { justify-content: flex-start; padding-top: 18px; gap: 14px; }
+  .menu-logo h1 { font-size: 30px; }
+  .menu-logo .logo-emoji { font-size: 38px; }
+  .menu-buttons { display: grid; grid-template-columns: 1fr 1fr; width: min(420px, 92vw); gap: 8px; }
+  .menu-buttons .btn.big { padding: 11px 10px; font-size: 15px; }
+  #btn-classic, #btn-settings { grid-column: 1 / -1; }
+  .menu-avatars .avatar-svg { width: 38px; height: 38px; }
+  .daily-cal { display: none; }
+}
 @media (max-width: 560px) {
   .pill { padding: 6px 10px; font-size: 12px; }
   #hud-level-name { font-size: 14px; max-width: 38vw; }
