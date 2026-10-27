@@ -1,6 +1,6 @@
 'use strict';
 /* NCT DREAM 连连看 - Service Worker（离线缓存） */
-const CACHE = 'nct-dream-llk-v5';
+const CACHE = 'nct-dream-llk-v6';
 const CORE = [
   './',
   './index.html',

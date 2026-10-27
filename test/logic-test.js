@@ -15,10 +15,10 @@ globalThis.SFX = {};
 const src = [
   fs.readFileSync(path.join(__dirname, '../js/data.js'), 'utf8'),
   fs.readFileSync(path.join(__dirname, '../js/game.js'), 'utf8'),
-  '\n;globalThis.__NCT = { Game, Save, LEVELS, MEMBERS, avatarSVG, memberByType, PHRASES, ACHIEVEMENTS, djb2Hash, mulberry32, todayKey };'
+  '\n;globalThis.__NCT = { Game, Save, LEVELS, MEMBERS, avatarSVG, memberByType, PHRASES, ACHIEVEMENTS, djb2Hash, mulberry32, todayKey, I18N, t, tf, memberFun };'
 ].join('\n');
 vm.runInThisContext(src, { filename: 'game-bundle.js' });
-const { Game, Save, LEVELS, MEMBERS, avatarSVG, memberByType, PHRASES, ACHIEVEMENTS, djb2Hash, mulberry32, todayKey } = globalThis.__NCT;
+const { Game, Save, LEVELS, MEMBERS, avatarSVG, memberByType, PHRASES, ACHIEVEMENTS, djb2Hash, mulberry32, todayKey, I18N, t, tf, memberFun } = globalThis.__NCT;
 
 let failures = 0;
 const check = (name, cond, extra) => {
@@ -225,6 +225,24 @@ console.log('--- 成就与存档 ---');
   check('今天未打但昨天连续（以昨天为终点 → 3 天）', Save.dailyStreak() === 3);
   Save.data.daily = { [keyOf(4)]: { score: 1, stars: 1 } };
   check('断签太久归零', Save.dailyStreak() === 0);
+
+  /* ---------- 7. i18n ---------- */
+  console.log('--- i18n ---');
+  {
+    const zhKeys = Object.keys(I18N.zh);
+    const enKeys = Object.keys(I18N.en);
+    check('中英字典键数量一致', zhKeys.length === enKeys.length, { zh: zhKeys.length, en: enKeys.length });
+    const missing = zhKeys.filter(k => !(k in I18N.en));
+    check('英文字典无缺失键', missing.length === 0, missing);
+    check('t() 默认中文', t('winTitle') === '关卡完成！');
+    Save.data.settings.lang = 'en';
+    check('t() 切换英文', t('winTitle') === 'Level Clear!');
+    check('t() 未知键回退键名', t('__no_such_key__') === '__no_such_key__');
+    check('tf() 占位符替换', tf('levelLabel', { n: 3, s: 'We Young' }) === 'Level 3 · We Young');
+    check('成员趣味描述双语', typeof memberFun(MEMBERS[0]) === 'string' && memberFun(MEMBERS[0]).length > 5);
+    Save.data.settings.lang = 'zh';
+    check('切回中文', t('winTitle') === '关卡完成！');
+  }
 }
 
 console.log(failures === 0 ? '\n🎉 全部测试通过' : `\n💥 ${failures} 个测试失败`);

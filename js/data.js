@@ -99,7 +99,118 @@ const ACHIEVEMENTS = [
   { id: 'night_owl',  name: '夜猫子',     desc: '在凌晨 0-5 点完成一局',   icon: '🦉' }
 ];
 
-/* ---------- SVG 卡通头像（代码绘制，非真实形象） ---------- */
+/* ---------- 多语言（中/英） ---------- */
+const I18N = {
+  zh: {
+    slogan: '连接相同的少年卡片 · We dream, we match!',
+    startClassic: '🚀 开始闯关', startDaily: '📅 每日挑战', dailyDone: '✅ 今日已完成 · 再来一局',
+    startEndless: '♾️ 无尽模式', levels: '🗺️ 关卡选择', about: '💚 成员图鉴',
+    achievements: '🏅 成就', history: '📊 战绩', settings: '⚙️ 设置',
+    menuFoot: '非官方粉丝作品 · 纯前端实现 · 完全免费 · 支持手机 · 键盘可玩（方向键+空格）',
+    classicMode: '闯关模式', dailyMode: '每日挑战', endlessMode: '无尽模式',
+    levelLabel: '第 {n} 关 · {s}', dailyLabel: '每日挑战 · {d}', roundLabel: '第 {n} 轮',
+    score: '得分', combo: '连击',
+    itemHint: '提示', itemShuffle: '洗牌', itemClock: '+20s', itemRestart: '重开',
+    winTitle: '关卡完成！', allClearTitle: '全部关卡完成！🎉',
+    dailyWinTitle: '每日挑战完成！📅', roundWinTitle: '第 {n} 轮完成！',
+    loseTitle: '时间到啦！', dailyLoseTitle: '今天的挑战没成功…', endlessLoseTitle: '无尽模式结束',
+    bonusLine: '消除奖励 <b>+{b}</b> · 总分 <b>{s}</b> · 最高连击 <b>x{c}</b> · 用时 <b>{t}s</b>',
+    zeroItems: '零道具', usedItems: '用了 {n} 个道具',
+    bestScore: '最佳成绩：{s}', newDailyBest: '🎊 刷新今日最佳！', todayBest: '今日最佳：{s}',
+    endlessBest: '无尽最佳：{n} 轮', totalProgress: '总进度 <b>{n}</b> 轮 · 总分 <b>{s}</b>',
+    nextLevel: '下一关 ▶', replay: '再玩一次 ↻', retry: '再试一次 ↻', toMenu: '返回菜单 🏠',
+    share: '📋 分享', shareResult: '📋 分享战绩', endlessNext: '下一轮 ▶', endlessAgain: '再来一局 ▶',
+    loseHint: '提示：优先消除被围住的卡片，连击有额外加分',
+    dailyLoseSub: '棋盘每天固定，摸清布局明天再战或现在再试一次！',
+    closeModal: '关闭', levelsTitle: '选择关卡 🗺️',
+    achTitle: '成就 {n}/{m} 🏅', histTitle: '最近战绩 📊',
+    histEmpty: '还没有战绩，快去玩一局吧！', histUnfinished: '未完成 · ',
+    aboutTitle: 'NCT DREAM 成员图鉴 💚',
+    aboutNote: 'NCT DREAM 是 SM 娱乐旗下的七人男子组合，粉丝名 NCTzen。本页面头像是代码绘制的卡通形象，非官方图片。',
+    setTitle: '设置 ⚙️', sfx: '游戏音效', bgm: '背景音乐', theme: '主题皮肤', reset: '重置所有进度',
+    resetBtn: '重置', resetConfirm: '⚠️ 再点一次确认重置',
+    themeDream: '🌈 梦幻星河', themeCandy: '🍬 粉甜糖果',
+    toastSfxOn: '音效已开启 🔊', toastSfxOff: '音效已关闭 🔇',
+    toastAutoShuffle: '无路可走，自动洗牌 🔀', toastNoHint: '提示次数已用完 💡',
+    toastNoPairHint: '暂时没有可消除的', toastNoShuffle: '洗牌次数已用完 🔀',
+    toastNoClock: '加时道具已用完 ⏰', toastClock: '时间 +20 秒 ⏰',
+    toastRestart: '已重新开始 ↻', toastCopied: '战绩已复制，去分享吧 📋',
+    toastCopyFail: '复制失败，请手动截图分享', toastReset: '进度已重置',
+    toastAch: '🏅 成就解锁：{s}',
+    comboN: '{n} 连击 · {p}',
+    menuStats: '闯关 {a}/{b} · ⭐ {c}/{d} · 无尽 {e} 轮 · 🏅 {f}/{g} · {daily}',
+    dailyDoneStat: '今日挑战 ⭐{s} {p}分', dailyTodo: '今日挑战未完成'
+  },
+  en: {
+    slogan: 'Connect matching idol cards · We dream, we match!',
+    startClassic: '🚀 Classic', startDaily: '📅 Daily Challenge', dailyDone: '✅ Done today · Play again',
+    startEndless: '♾️ Endless', levels: '🗺️ Levels', about: '💚 Members',
+    achievements: '🏅 Achievements', history: '📊 History', settings: '⚙️ Settings',
+    menuFoot: 'Unofficial fan game · pure front-end · 100% free · mobile ready · keyboard supported',
+    classicMode: 'Classic', dailyMode: 'Daily', endlessMode: 'Endless',
+    levelLabel: 'Level {n} · {s}', dailyLabel: 'Daily · {d}', roundLabel: 'Round {n}',
+    score: 'Score', combo: 'Combo',
+    itemHint: 'Hint', itemShuffle: 'Mix', itemClock: '+20s', itemRestart: 'Retry',
+    winTitle: 'Level Clear!', allClearTitle: 'All Levels Clear! 🎉',
+    dailyWinTitle: 'Daily Challenge Clear! 📅', roundWinTitle: 'Round {n} Clear!',
+    loseTitle: "Time's Up!", dailyLoseTitle: 'Not today…', endlessLoseTitle: 'Endless Over',
+    bonusLine: 'Clear bonus <b>+{b}</b> · Score <b>{s}</b> · Max combo <b>x{c}</b> · Time <b>{t}s</b>',
+    zeroItems: 'no items', usedItems: '{n} items used',
+    bestScore: 'Best: {s}', newDailyBest: '🎊 New daily best!', todayBest: "Today's best: {s}",
+    endlessBest: 'Endless best: {n} rounds', totalProgress: 'Total <b>{n}</b> rounds · <b>{s}</b> pts',
+    nextLevel: 'Next ▶', replay: 'Replay ↻', retry: 'Try Again ↻', toMenu: 'Menu 🏠',
+    share: '📋 Share', shareResult: '📋 Share', endlessNext: 'Next Round ▶', endlessAgain: 'Play Again ▶',
+    loseHint: 'Tip: clear blocked tiles first; combos score extra',
+    dailyLoseSub: "The board is the same all day — learn it and retry!",
+    closeModal: 'Close', levelsTitle: 'Choose Level 🗺️',
+    achTitle: 'Achievements {n}/{m} 🏅', histTitle: 'Recent Games 📊',
+    histEmpty: 'No games yet — go play one!', histUnfinished: 'DNF · ',
+    aboutTitle: 'NCT DREAM Members 💚',
+    aboutNote: 'NCT DREAM is a seven-member boy group under SM Entertainment; fans are called NCTzen. Avatars here are code-drawn cartoons, not official images.',
+    setTitle: 'Settings ⚙️', sfx: 'Sound FX', bgm: 'Music', theme: 'Theme', reset: 'Reset all progress',
+    resetBtn: 'Reset', resetConfirm: '⚠️ Tap again to confirm',
+    themeDream: '🌈 Dreamy', themeCandy: '🍬 Candy',
+    toastSfxOn: 'Sound on 🔊', toastSfxOff: 'Sound muted 🔇',
+    toastAutoShuffle: 'No moves — auto shuffle 🔀', toastNoHint: 'Out of hints 💡',
+    toastNoPairHint: 'No matches available', toastNoShuffle: 'Out of shuffles 🔀',
+    toastNoClock: 'Out of time boosts ⏰', toastClock: '+20 seconds ⏰',
+    toastRestart: 'Restarted ↻', toastCopied: 'Result copied — share it! 📋',
+    toastCopyFail: 'Copy failed — screenshot instead', toastReset: 'Progress reset',
+    toastAch: '🏅 Unlocked: {s}',
+    comboN: '{n} Combo · {p}',
+    menuStats: 'Levels {a}/{b} · ⭐ {c}/{d} · Endless {e} · 🏅 {f}/{g} · {daily}',
+    dailyDoneStat: 'Daily ⭐{s} {p} pts', dailyTodo: 'Daily not done'
+  }
+};
+
+function t(key) {
+  const lang = (typeof Save !== 'undefined' && Save.data && Save.data.settings && Save.data.settings.lang) || 'zh';
+  const pack = I18N[lang] || I18N.zh;
+  const v = pack[key] !== undefined ? pack[key] : I18N.zh[key];
+  return v !== undefined ? v : key;
+}
+
+/* {n} 占位符替换 */
+function tf(key, params) {
+  let s = t(key);
+  for (const k in params) s = s.split('{' + k + '}').join(params[k]);
+  return s;
+}
+
+/* 成员图鉴趣味描述的双语字段：zh 固定，en 简单跟随 */
+const MEMBER_FUN_EN = {
+  mark: 'Variety-show ace from Canada, nicknamed "the little tiger"',
+  renjun: 'From Jilin, China — a little fox with a crystal-clear voice',
+  jeno: 'A puppy-like healing smile, full stage presence',
+  haechan: 'His name means "shining sun" — the mood-maker',
+  jaemin: 'Cat guardian; always telling fans to "take care of yourself"',
+  chenle: 'Dolphin-high-note owner with an equally happy laugh',
+  jisung: 'The tall dancing machine with the softest heart'
+};
+function memberFun(m) {
+  const lang = (typeof Save !== 'undefined' && Save.data && Save.data.settings && Save.data.settings.lang) || 'zh';
+  return lang === 'en' ? (MEMBER_FUN_EN[m.id] || m.fun) : m.fun;
+}
 /* style: 0=Mark 1=Renjun 2=Jeno 3=Haechan 4=Jaemin 5=Chenle 6=Jisung */
 function avatarSVG(member, size) {
   const i = MEMBERS.indexOf(member);

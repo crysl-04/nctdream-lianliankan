@@ -18,7 +18,7 @@
     <div class="menu-logo">
       <div class="logo-emoji">🌈</div>
       <h1>NCT DREAM <em>连连看</em></h1>
-      <p class="slogan">连接相同的少年卡片 · We dream, we match!</p>
+      <p class="slogan" id="menu-slogan">连接相同的少年卡片 · We dream, we match!</p>
       <div class="menu-avatars" id="menu-avatars"></div>
     </div>
     <div class="menu-buttons">
@@ -33,7 +33,7 @@
     </div>
     <p class="menu-stats" id="menu-stats"></p>
     <div class="daily-cal" id="daily-cal" aria-hidden="true"></div>
-    <p class="menu-foot">非官方粉丝作品 · 纯前端实现 · 完全免费 · 支持手机 · 键盘可玩（方向键+空格）</p>
+    <p class="menu-foot" id="menu-foot">非官方粉丝作品 · 纯前端实现 · 完全免费 · 支持手机 · 键盘可玩（方向键+空格）</p>
   </section>
 
   <!-- ====== 游戏界面 ====== -->
@@ -47,8 +47,8 @@
         </div>
       </div>
       <div class="hud-right">
-        <div class="pill">得分 <b id="hud-score">0</b></div>
-        <div class="pill combo-pill">连击 <b id="hud-combo">x0</b></div>
+        <div class="pill"><span id="hud-score-label">得分</span> <b id="hud-score">0</b></div>
+        <div class="pill combo-pill"><span id="hud-combo-label">连击</span> <b id="hud-combo">x0</b></div>
         <button id="btn-sound" class="icon-btn" title="音效开关">🔊</button>
       </div>
     </div>
@@ -64,10 +64,10 @@
     </div>
 
     <div id="item-bar">
-      <button id="btn-hint" class="item-btn">💡<span>提示</span><b id="cnt-hint">3</b></button>
-      <button id="btn-shuffle" class="item-btn">🔀<span>洗牌</span><b id="cnt-shuffle">2</b></button>
-      <button id="btn-clock" class="item-btn">⏰<span>+20s</span><b id="cnt-clock">1</b></button>
-      <button id="btn-restart" class="item-btn">↻<span>重开</span></button>
+      <button id="btn-hint" class="item-btn">💡<span id="item-hint-label">提示</span><b id="cnt-hint">3</b></button>
+      <button id="btn-shuffle" class="item-btn">🔀<span id="item-shuffle-label">洗牌</span><b id="cnt-shuffle">2</b></button>
+      <button id="btn-clock" class="item-btn">⏰<span id="item-clock-label">+20s</span><b id="cnt-clock">1</b></button>
+      <button id="btn-restart" class="item-btn">↻<span id="item-restart-label">重开</span></button>
     </div>
   </section>
 

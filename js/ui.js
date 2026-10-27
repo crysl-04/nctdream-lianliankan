@@ -40,8 +40,27 @@ const UI = {
     this.spawnBgDeco();
     this.bindEvents();
     this.bindKeyboard();
+    this.applyStaticI18n();
     this.renderMenuStats();
     this.showScreen('menu');
+  },
+
+  /* 静态文案随语言设置刷新（菜单按钮、HUD、道具栏、页脚） */
+  applyStaticI18n() {
+    const map = {
+      'btn-classic': 'startClassic', 'btn-daily': 'startDaily', 'btn-endless': 'startEndless',
+      'btn-levels': 'levels', 'btn-about': 'about', 'btn-achievements': 'achievements',
+      'btn-history': 'history', 'btn-settings': 'settings',
+      'menu-slogan': 'slogan', 'menu-foot': 'menuFoot',
+      'hud-score-label': 'score', 'hud-combo-label': 'combo',
+      'item-hint-label': 'itemHint', 'item-shuffle-label': 'itemShuffle',
+      'item-clock-label': 'itemClock', 'item-restart-label': 'itemRestart'
+    };
+    for (const id in map) {
+      const el = document.getElementById(id);
+      if (el) el.textContent = t(map[id]);
+    }
+    this.renderMenuStats(); /* 每日按钮文案也依赖语言 */
   },
 
   applyTheme() {
@@ -104,7 +123,7 @@ const UI = {
       SFX.ensure();
       Save.data.settings.sfx = SFX.toggleSfx();
       Save.write(); this.updateSoundIcon();
-      this.toast(SFX.enabled ? '音效已开启 🔊' : '音效已关闭 🔇');
+      this.toast(SFX.enabled ? t('toastSfxOn') : t('toastSfxOff'));
     });
     this.els.btnHint.addEventListener('click', () => this.hintAction());
     this.els.btnShuffle.addEventListener('click', () => this.shuffleAction());
@@ -161,6 +180,7 @@ const UI = {
     this.updateItems();
     this.onTick();
     SFX.ensure();
+    SFX.startFx();
     if (SFX.musicOn) SFX.startMusic();
   },
 
@@ -264,7 +284,7 @@ const UI = {
         if (Game.remaining() === 0) { this.onWin(); return; }
         if (Game.autoShuffleIfNeeded()) {
           this.refreshAllTiles();
-          this.toast('无路可走，自动洗牌 🔀');
+          this.toast(t('toastAutoShuffle'));
         }
       }, 300);
       return;
@@ -306,7 +326,7 @@ const UI = {
       div.classList.add('hot');
     } else if (res.combo >= 2) {
       const phrase = PHRASES[(Math.random() * PHRASES.length) | 0];
-      div.textContent = `${res.combo} 连击 · ${phrase}`;
+      div.textContent = tf('comboN', { n: res.combo, p: phrase });
       div.classList.add('hot');
     } else {
       div.textContent = '+' + res.gain;
@@ -319,14 +339,14 @@ const UI = {
   updateHUD() {
     if (Game.mode === 'classic') {
       const L = LEVELS[Game.levelIdx];
-      this.els.hudLevelName.textContent = `第 ${Game.levelIdx + 1} 关 · ${L.song}`;
-      this.els.hudMode.textContent = '闯关模式';
+      this.els.hudLevelName.textContent = tf('levelLabel', { n: Game.levelIdx + 1, s: L.song });
+      this.els.hudMode.textContent = t('classicMode');
     } else if (Game.mode === 'daily') {
-      this.els.hudLevelName.textContent = `每日挑战 · ${Game.dailyDate}`;
-      this.els.hudMode.textContent = '每日挑战';
+      this.els.hudLevelName.textContent = tf('dailyLabel', { d: Game.dailyDate });
+      this.els.hudMode.textContent = t('dailyMode');
     } else {
-      this.els.hudLevelName.textContent = `第 ${Game.endlessRound} 轮`;
-      this.els.hudMode.textContent = '无尽模式';
+      this.els.hudLevelName.textContent = tf('roundLabel', { n: Game.endlessRound });
+      this.els.hudMode.textContent = t('endlessMode');
     }
     this.els.hudScore.textContent = Game.score;
     this.els.hudCombo.textContent = 'x' + Game.combo;
@@ -359,7 +379,7 @@ const UI = {
   /* ---------- 道具 ---------- */
   hintAction() {
     const pair = Game.useHint();
-    if (!pair) { this.toast(Game.items.hint <= 0 ? '提示次数已用完 💡' : '暂时没有可消除的'); return; }
+    if (!pair) { this.toast(Game.items.hint <= 0 ? t('toastNoHint') : t('toastNoPairHint')); return; }
     SFX.hintFx();
     this.updateItems();
     for (const t of pair) {
@@ -369,7 +389,7 @@ const UI = {
   },
 
   shuffleAction() {
-    if (!Game.useShuffle()) { this.toast('洗牌次数已用完 🔀'); return; }
+    if (!Game.useShuffle()) { this.toast(t('toastNoShuffle')); return; }
     SFX.shuffleFx();
     this.els.board.classList.add('shuffling');
     this.refreshAllTiles();
@@ -378,9 +398,9 @@ const UI = {
   },
 
   clockAction() {
-    if (!Game.useClock()) { this.toast('加时道具已用完 ⏰'); return; }
+    if (!Game.useClock()) { this.toast(t('toastNoClock')); return; }
     SFX.clockFx();
-    this.toast('时间 +20 秒 ⏰');
+    this.toast(t('toastClock'));
     this.onTick();
     this.updateItems();
   },
@@ -394,7 +414,7 @@ const UI = {
     this.updateItems();
     this.onTick();
     this.closeModal();
-    this.toast('已重新开始 ↻');
+    this.toast(t('toastRestart'));
   },
 
   /* ---------- 分享战绩 ---------- */
@@ -412,7 +432,7 @@ const UI = {
       text = `🌈 NCT DREAM 连连看 · 无尽模式\n♾️ 通过 ${Game.boardsCleared} 轮\n💯 总分 ${Game.score}`;
     }
     text += `\n▶ ${site}`;
-    const done = () => this.toast('战绩已复制，去分享吧 📋');
+    const done = () => this.toast(t('toastCopied'));
     if (navigator.clipboard && navigator.clipboard.writeText) {
       navigator.clipboard.writeText(text).then(done).catch(() => this.fallbackCopy(text, done));
     } else {
@@ -427,7 +447,7 @@ const UI = {
     ta.style.opacity = '0';
     document.body.appendChild(ta);
     ta.select();
-    try { document.execCommand('copy'); done(); } catch (e) { this.toast('复制失败，请手动截图分享'); }
+    try { document.execCommand('copy'); done(); } catch (e) { this.toast(t('toastCopyFail')); }
     ta.remove();
   },
 
@@ -471,7 +491,7 @@ const UI = {
         return a ? `${a.icon}${a.name}` : id;
       });
       SFX.achieveFx();
-      setTimeout(() => this.toast('🏅 成就解锁：' + names.join('、')), 600);
+      setTimeout(() => this.toast(tf('toastAch', { s: names.join('、')})), 600);
       this.renderMenuStats();
     }
   },
@@ -491,9 +511,9 @@ const UI = {
       </div>`;
     }).join('');
     this.showModal(`
-      <h2 class="modal-title">成就 ${got.length}/${ACHIEVEMENTS.length} 🏅</h2>
+      <h2 class="modal-title">${tf('achTitle', { n: got.length, m: ACHIEVEMENTS.length })}</h2>
       <div class="ach-grid">${items}</div>
-      <div class="modal-actions"><button class="btn ghost" data-action="close-modal">关闭</button></div>`);
+      <div class="modal-actions"><button class="btn ghost" data-action="close-modal">${t('closeModal')}</button></div>`);
   },
 
   showHistoryModal() {
@@ -502,14 +522,14 @@ const UI = {
       ? h.map(e => `<div class="hist-row ${e.win ? 'win' : 'lose'}">
           <span class="hist-icon">${e.mode === 'daily' ? '📅' : e.mode === 'endless' ? '♾️' : '🚀'}</span>
           <span class="hist-label">${e.label}</span>
-          <span class="hist-score">${e.win ? '' : '未完成 · '}${e.score} 分${e.elapsed ? ' · ' + e.elapsed + 's' : ''}</span>
+          <span class="hist-score">${e.win ? '' : t('histUnfinished')}${e.score} 分${e.elapsed ? ' · ' + e.elapsed + 's' : ''}</span>
           <span class="hist-time">${e.time}</span>
         </div>`).join('')
-      : '<p class="modal-sub">还没有战绩，快去玩一局吧！</p>';
+      : `<p class="modal-sub">${t('histEmpty')}</p>`;
     this.showModal(`
-      <h2 class="modal-title">最近战绩 📊</h2>
+      <h2 class="modal-title">${t('histTitle')}</h2>
       <div class="hist-list">${items}</div>
-      <div class="modal-actions"><button class="btn ghost" data-action="close-modal">关闭</button></div>`);
+      <div class="modal-actions"><button class="btn ghost" data-action="close-modal">${t('closeModal')}</button></div>`);
   },
 
   /* ---------- 胜负 ---------- */
@@ -520,7 +540,7 @@ const UI = {
     this.updateHUD();
     this.checkAchievements('win');
 
-    const statsLine = `<p class="modal-lines">消除奖励 <b>+${bonus}</b> · 总分 <b>${Game.score}</b> · 最高连击 <b>x${Game.maxCombo}</b> · 用时 <b>${Game.elapsedSec()}s</b>${Game.itemsUsed ? ` · 用了 ${Game.itemsUsed} 个道具` : ' · 零道具'}</p>`;
+    const statsLine = `<p class="modal-lines">${tf('bonusLine', { b: bonus, s: Game.score, c: Game.maxCombo, t: Game.elapsedSec() })}${Game.itemsUsed ? tf('usedItems', { n: Game.itemsUsed }) : t('zeroItems').replace(/^/, ' · ')}</p>`;
 
     if (Game.mode === 'classic') {
       const stars = Game.stars();
@@ -530,15 +550,15 @@ const UI = {
       const starStr = '⭐'.repeat(stars) + '✩'.repeat(3 - stars);
       this.showModal(`
         <div class="win-face">${avatarSVG(MEMBERS[Game.levelIdx % MEMBERS.length], 90)}</div>
-        <h2 class="modal-title">${isLast ? '全部关卡完成！🎉' : '关卡完成！'}</h2>
+        <h2 class="modal-title">${isLast ? t('allClearTitle') : t('winTitle')}</h2>
         <div class="stars">${starStr}</div>
         ${statsLine}
-        <p class="modal-sub">最佳成绩：${Save.data.best[Game.levelIdx] || Game.score}</p>
+        <p class="modal-sub">${tf('bestScore', { s: Save.data.best[Game.levelIdx] || Game.score })}</p>
         <div class="modal-actions">
-          ${isLast ? '' : '<button class="btn primary" data-action="next-level">下一关 ▶</button>'}
-          <button class="btn ghost" data-action="share-score">📋 分享</button>
-          <button class="btn ghost" data-action="replay">再玩一次 ↻</button>
-          <button class="btn ghost" data-action="menu">返回菜单 🏠</button>
+          ${isLast ? '' : `<button class="btn primary" data-action="next-level">${t('nextLevel')}</button>`}
+          <button class="btn ghost" data-action="share-score">${t('share')}</button>
+          <button class="btn ghost" data-action="replay">${t('replay')}</button>
+          <button class="btn ghost" data-action="menu">${t('toMenu')}</button>
         </div>`);
     } else if (Game.mode === 'daily') {
       const stars = Game.stars();
@@ -548,14 +568,14 @@ const UI = {
       const starStr = '⭐'.repeat(stars) + '✩'.repeat(3 - stars);
       this.showModal(`
         <div class="win-face">${avatarSVG(MEMBERS[djb2Hash(Game.dailyDate) % MEMBERS.length], 90)}</div>
-        <h2 class="modal-title">每日挑战完成！📅</h2>
+        <h2 class="modal-title">${t('dailyWinTitle')}</h2>
         <div class="stars">${starStr}</div>
         ${statsLine}
-        <p class="modal-sub">${isNewBest ? '🎊 刷新今日最佳！' : '今日最佳：' + Save.data.daily[Game.dailyDate].score}</p>
+        <p class="modal-sub">${isNewBest ? t('newDailyBest') : tf('todayBest', { s: Save.data.daily[Game.dailyDate].score })}</p>
         <div class="modal-actions">
-          <button class="btn primary" data-action="share-score">📋 分享战绩</button>
-          <button class="btn ghost" data-action="replay">再挑战一次 ↻</button>
-          <button class="btn ghost" data-action="menu">返回菜单 🏠</button>
+          <button class="btn primary" data-action="share-score">${t('shareResult')}</button>
+          <button class="btn ghost" data-action="replay">${t('retry')}</button>
+          <button class="btn ghost" data-action="menu">${t('toMenu')}</button>
         </div>`);
     } else {
       Save.recordEndless(Game.boardsCleared, Game.score);
@@ -563,12 +583,12 @@ const UI = {
       this.checkAchievements('endless');
       this.showModal(`
         <div class="win-face">${avatarSVG(MEMBERS[(Game.boardsCleared) % MEMBERS.length], 90)}</div>
-        <h2 class="modal-title">第 ${Game.endlessRound} 轮完成！</h2>
-        <p class="modal-lines">总进度 <b>${Game.boardsCleared}</b> 轮 · 总分 <b>${Game.score}</b> · 最高连击 <b>x${Game.maxCombo}</b></p>
-        <p class="modal-sub">无尽最佳：${Save.data.endlessBest} 轮</p>
+        <h2 class="modal-title">${tf('roundWinTitle', { n: Game.endlessRound })}</h2>
+        <p class="modal-lines">${tf('totalProgress', { n: Game.boardsCleared, s: Game.score })}</p>
+        <p class="modal-sub">${tf('endlessBest', { n: Save.data.endlessBest })}</p>
         <div class="modal-actions">
-          <button class="btn primary" data-action="endless-next">下一轮 ▶</button>
-          <button class="btn ghost" data-action="menu">返回菜单 🏠</button>
+          <button class="btn primary" data-action="endless-next">${t('endlessNext')}</button>
+          <button class="btn ghost" data-action="menu">${t('toMenu')}</button>
         </div>`);
     }
   },
@@ -579,33 +599,33 @@ const UI = {
       Save.pushHistory({ mode: 'classic', label: `第${Game.levelIdx + 1}关 ${LEVELS[Game.levelIdx].song}`, score: Game.score, elapsed: Game.elapsedSec(), win: false });
       this.showModal(`
         <div class="lose-face">⏰</div>
-        <h2 class="modal-title">时间到啦！</h2>
-        <p class="modal-lines">${LEVELS[Game.levelIdx].song} · 得分 <b>${Game.score}</b></p>
-        <p class="modal-sub">提示：优先消除被围住的卡片，连击有额外加分</p>
+        <h2 class="modal-title">${t('loseTitle')}</h2>
+        <p class="modal-lines">${LEVELS[Game.levelIdx].song} · ${t('score')} <b>${Game.score}</b></p>
+        <p class="modal-sub">${t('loseHint')}</p>
         <div class="modal-actions">
-          <button class="btn primary" data-action="replay">再试一次 ↻</button>
-          <button class="btn ghost" data-action="menu">返回菜单 🏠</button>
+          <button class="btn primary" data-action="replay">${t('retry')}</button>
+          <button class="btn ghost" data-action="menu">${t('toMenu')}</button>
         </div>`);
     } else if (Game.mode === 'daily') {
       this.showModal(`
         <div class="lose-face">⏰</div>
-        <h2 class="modal-title">今天的挑战没成功…</h2>
-        <p class="modal-lines">每日挑战 · 得分 <b>${Game.score}</b></p>
-        <p class="modal-sub">棋盘每天固定，摸清布局明天再战或现在再试一次！</p>
+        <h2 class="modal-title">${t('dailyLoseTitle')}</h2>
+        <p class="modal-lines">${t('dailyMode')} · ${t('score')} <b>${Game.score}</b></p>
+        <p class="modal-sub">${t('dailyLoseSub')}</p>
         <div class="modal-actions">
-          <button class="btn primary" data-action="replay">再试一次 ↻</button>
-          <button class="btn ghost" data-action="menu">返回菜单 🏠</button>
+          <button class="btn primary" data-action="replay">${t('retry')}</button>
+          <button class="btn ghost" data-action="menu">${t('toMenu')}</button>
         </div>`);
     } else {
       Save.recordEndless(Game.boardsCleared, Game.score);
       this.showModal(`
         <div class="lose-face">😴</div>
-        <h2 class="modal-title">无尽模式结束</h2>
-        <p class="modal-lines">共通过 <b>${Game.boardsCleared}</b> 轮 · 总分 <b>${Game.score}</b></p>
-        <p class="modal-sub">历史最佳：${Save.data.endlessBest} 轮</p>
+        <h2 class="modal-title">${t('endlessLoseTitle')}</h2>
+        <p class="modal-lines">${tf('totalProgress', { n: Game.boardsCleared, s: Game.score })}</p>
+        <p class="modal-sub">${tf('endlessBest', { n: Save.data.endlessBest })}</p>
         <div class="modal-actions">
-          <button class="btn primary" data-action="endless-again">再来一局 ▶</button>
-          <button class="btn ghost" data-action="menu">返回菜单 🏠</button>
+          <button class="btn primary" data-action="endless-again">${t('endlessAgain')}</button>
+          <button class="btn ghost" data-action="menu">${t('toMenu')}</button>
         </div>`);
     }
   },
@@ -668,9 +688,16 @@ const UI = {
         this.showSettingsModal();
         break;
       }
+      case 'cycle-lang': {
+        Save.data.settings.lang = Save.data.settings.lang === 'en' ? 'zh' : 'en';
+        Save.write();
+        this.applyStaticI18n();
+        this.showSettingsModal();
+        break;
+      }
       case 'reset-progress': {
-        if (btn.dataset.armed) { Save.reset(); this.renderMenuStats(); this.showSettingsModal(); this.toast('进度已重置'); }
-        else { btn.dataset.armed = '1'; btn.textContent = '⚠️ 再点一次确认重置'; }
+        if (btn.dataset.armed) { Save.reset(); this.renderMenuStats(); this.showSettingsModal(); this.toast(t('toastReset')); }
+        else { btn.dataset.armed = '1'; btn.textContent = t('resetConfirm'); }
         break;
       }
     }
@@ -690,9 +717,9 @@ const UI = {
       </button>`;
     }).join('');
     this.showModal(`
-      <h2 class="modal-title">选择关卡 🗺️</h2>
+      <h2 class="modal-title">${t('levelsTitle')}</h2>
       <div class="level-grid">${items}</div>
-      <div class="modal-actions"><button class="btn ghost" data-action="close-modal">关闭</button></div>`);
+      <div class="modal-actions"><button class="btn ghost" data-action="close-modal">${t('closeModal')}</button></div>`);
   },
 
   showAboutModal() {
@@ -703,49 +730,57 @@ const UI = {
           <h3>${m.name} <small>${m.kr}</small></h3>
           <p class="member-cn">${m.cn} · ${m.emoji}</p>
           <p class="member-meta">🎂 ${m.birth} · ${m.pos}</p>
-          <p class="member-fun">${m.fun}</p>
+          <p class="member-fun">${memberFun(m)}</p>
         </div>
       </div>`).join('');
     this.showModal(`
-      <h2 class="modal-title">NCT DREAM 成员图鉴 💚</h2>
+      <h2 class="modal-title">${t('aboutTitle')}</h2>
       <div class="member-list">${cards}</div>
-      <p class="modal-sub">NCT DREAM 是 SM 娱乐旗下的七人男子组合，粉丝名 NCTzen。本页面头像是代码绘制的卡通形象，非官方图片。</p>
-      <div class="modal-actions"><button class="btn ghost" data-action="close-modal">关闭</button></div>`);
+      <p class="modal-sub">${t('aboutNote')}</p>
+      <div class="modal-actions"><button class="btn ghost" data-action="close-modal">${t('closeModal')}</button></div>`);
   },
 
   showSettingsModal() {
-    const themeNames = { dream: '🌈 梦幻星河', candy: '🍬 粉甜糖果' };
+    const themeNames = { dream: t('themeDream'), candy: t('themeCandy') };
     this.showModal(`
-      <h2 class="modal-title">设置 ⚙️</h2>
+      <h2 class="modal-title">${t('setTitle')}</h2>
       <div class="setting-row">
-        <span>游戏音效</span>
+        <span>${t('sfx')}</span>
         <button class="switch ${SFX.enabled ? 'on' : ''}" data-action="toggle-sfx">${SFX.enabled ? 'ON' : 'OFF'}</button>
       </div>
       <div class="setting-row">
-        <span>背景音乐</span>
+        <span>${t('bgm')}</span>
         <button class="switch ${SFX.musicOn ? 'on' : ''}" data-action="toggle-music">${SFX.musicOn ? 'ON' : 'OFF'}</button>
       </div>
       <div class="setting-row">
-        <span>主题皮肤</span>
+        <span>${t('theme')}</span>
         <button class="btn ghost small" data-action="cycle-theme">${themeNames[Save.data.settings.theme] || themeNames.dream}</button>
       </div>
       <div class="setting-row">
-        <span>重置所有进度</span>
-        <button class="btn danger small" data-action="reset-progress">重置</button>
+        <span>语言 / Language</span>
+        <button class="btn ghost small" data-action="cycle-lang">${Save.data.settings.lang === 'en' ? 'English' : '中文'}</button>
       </div>
-      <div class="modal-actions"><button class="btn ghost" data-action="close-modal">关闭</button></div>`);
+      <div class="setting-row">
+        <span>${t('reset')}</span>
+        <button class="btn danger small" data-action="reset-progress">${t('resetBtn')}</button>
+      </div>
+      <div class="modal-actions"><button class="btn ghost" data-action="close-modal">${t('closeModal')}</button></div>`);
   },
 
   renderMenuStats() {
     const d = Save.data;
     const totalStars = Object.values(d.stars).reduce((a, b) => a + b, 0);
     const today = d.daily[todayKey()];
-    const dailyStr = today ? `今日挑战 ⭐${today.stars} ${today.score}分` : '今日挑战未完成';
-    this.els.menuStats.textContent =
-      `闯关 ${Math.min(d.unlocked + 1, LEVELS.length)}/${LEVELS.length} · ⭐ ${totalStars}/${LEVELS.length * 3} · 无尽 ${d.endlessBest} 轮 · 🏅 ${d.achievements.length}/${ACHIEVEMENTS.length} · ${dailyStr}`;
+    const dailyStr = today ? tf('dailyDoneStat', { s: today.stars, p: today.score }) : t('dailyTodo');
+    this.els.menuStats.textContent = tf('menuStats', {
+      a: Math.min(d.unlocked + 1, LEVELS.length), b: LEVELS.length,
+      c: totalStars, d: LEVELS.length * 3,
+      e: d.endlessBest, f: d.achievements.length, g: ACHIEVEMENTS.length,
+      daily: dailyStr
+    });
     /* 今日已打卡时更新每日挑战按钮文案 */
     if (this.els.btnDaily) {
-      this.els.btnDaily.textContent = today ? '✅ 今日已完成 · 再来一局' : '📅 每日挑战';
+      this.els.btnDaily.textContent = today ? t('dailyDone') : t('startDaily');
     }
     this.renderDailyCal();
   },

@@ -311,7 +311,7 @@ const Game = {
 /* ---------- 存档 ---------- */
 const Save = {
   KEY: 'nct_dream_llk_v1',
-  data: { unlocked: 0, stars: {}, best: {}, endlessBest: 0, daily: {}, achievements: [], history: [], settings: { sfx: true, music: true, theme: 'dream' } },
+  data: { unlocked: 0, stars: {}, best: {}, endlessBest: 0, daily: {}, achievements: [], history: [], settings: { sfx: true, music: true, theme: 'dream', lang: 'zh' } },
 
   load() {
     try {
@@ -319,7 +319,7 @@ const Save = {
       if (raw) {
         const d = JSON.parse(raw);
         this.data = Object.assign(this.data, d);
-        this.data.settings = Object.assign({ sfx: true, music: true, theme: 'dream' }, d.settings || {});
+        this.data.settings = Object.assign({ sfx: true, music: true, theme: 'dream', lang: 'zh' }, d.settings || {});
         this.data.daily = d.daily || {};
         this.data.achievements = d.achievements || [];
         this.data.history = d.history || [];

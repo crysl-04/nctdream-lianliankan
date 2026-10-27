@@ -71,6 +71,11 @@ const SFX = {
     [659, 831, 988, 1319].forEach((f, k) => this.tone(f, 0.16, 'sine', 0.3, k * 0.09));
     this.tone(1976, 0.24, 'sine', 0.18, 0.38);
   },
+  startFx() {
+    /* 开局小号角 */
+    [392, 523, 659].forEach((f, k) => this.tone(f, 0.12, 'square', 0.16, k * 0.09));
+    this.tone(784, 0.2, 'triangle', 0.26, 0.27);
+  },
   lose() {
     [440, 392, 330, 262].forEach((f, k) => this.tone(f, 0.3, 'triangle', 0.3, k * 0.2));
   },
