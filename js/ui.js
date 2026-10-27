@@ -28,7 +28,7 @@ const UI = {
       btnClock: $('btn-clock'), cntClock: $('cnt-clock'),
       btnRestart: $('btn-restart'),
       modalMask: $('modal-mask'), modal: $('modal'), toast: $('toast'),
-      confetti: $('confetti'), bgDeco: $('bg-deco')
+      confetti: $('confetti'), bgDeco: $('bg-deco'), dailyCal: $('daily-cal')
     };
 
     Save.load();
@@ -487,7 +487,7 @@ const UI = {
       ? h.map(e => `<div class="hist-row ${e.win ? 'win' : 'lose'}">
           <span class="hist-icon">${e.mode === 'daily' ? '📅' : e.mode === 'endless' ? '♾️' : '🚀'}</span>
           <span class="hist-label">${e.label}</span>
-          <span class="hist-score">${e.win ? '' : '未完成 · '}${e.score} 分</span>
+          <span class="hist-score">${e.win ? '' : '未完成 · '}${e.score} 分${e.elapsed ? ' · ' + e.elapsed + 's' : ''}</span>
           <span class="hist-time">${e.time}</span>
         </div>`).join('')
       : '<p class="modal-sub">还没有战绩，快去玩一局吧！</p>';
@@ -505,12 +505,12 @@ const UI = {
     this.updateHUD();
     this.checkAchievements('win');
 
-    const statsLine = `<p class="modal-lines">消除奖励 <b>+${bonus}</b> · 总分 <b>${Game.score}</b> · 最高连击 <b>x${Game.maxCombo}</b>${Game.itemsUsed ? ` · 用了 ${Game.itemsUsed} 个道具` : ' · 零道具'}</p>`;
+    const statsLine = `<p class="modal-lines">消除奖励 <b>+${bonus}</b> · 总分 <b>${Game.score}</b> · 最高连击 <b>x${Game.maxCombo}</b> · 用时 <b>${Game.elapsedSec()}s</b>${Game.itemsUsed ? ` · 用了 ${Game.itemsUsed} 个道具` : ' · 零道具'}</p>`;
 
     if (Game.mode === 'classic') {
       const stars = Game.stars();
       Save.recordWin(Game.levelIdx, stars, Game.score);
-      Save.pushHistory({ mode: 'classic', label: `第${Game.levelIdx + 1}关 ${LEVELS[Game.levelIdx].song}`, score: Game.score, win: true });
+      Save.pushHistory({ mode: "classic", label: `第${Game.levelIdx + 1}关 ${LEVELS[Game.levelIdx].song}`, score: Game.score, elapsed: Game.elapsedSec(), win: true });
       const isLast = Game.levelIdx >= LEVELS.length - 1;
       const starStr = '⭐'.repeat(stars) + '✩'.repeat(3 - stars);
       this.showModal(`
@@ -528,7 +528,7 @@ const UI = {
     } else if (Game.mode === 'daily') {
       const stars = Game.stars();
       const isNewBest = Save.recordDaily(Game.dailyDate, Game.score, stars);
-      Save.pushHistory({ mode: 'daily', label: `每日挑战 ${Game.dailyDate}`, score: Game.score, win: true });
+      Save.pushHistory({ mode: 'daily', label: `每日挑战 ${Game.dailyDate}`, score: Game.score, elapsed: Game.elapsedSec(), win: true });
       this.checkAchievements('daily');
       const starStr = '⭐'.repeat(stars) + '✩'.repeat(3 - stars);
       this.showModal(`
@@ -544,7 +544,7 @@ const UI = {
         </div>`);
     } else {
       Save.recordEndless(Game.boardsCleared, Game.score);
-      Save.pushHistory({ mode: 'endless', label: `无尽 ${Game.boardsCleared} 轮`, score: Game.score, win: true });
+      Save.pushHistory({ mode: 'endless', label: `无尽 ${Game.boardsCleared} 轮`, score: Game.score, elapsed: Game.elapsedSec(), win: true });
       this.checkAchievements('endless');
       this.showModal(`
         <div class="win-face">${avatarSVG(MEMBERS[(Game.boardsCleared) % MEMBERS.length], 90)}</div>
@@ -561,7 +561,7 @@ const UI = {
   onLose() {
     SFX.lose();
     if (Game.mode === 'classic') {
-      Save.pushHistory({ mode: 'classic', label: `第${Game.levelIdx + 1}关 ${LEVELS[Game.levelIdx].song}`, score: Game.score, win: false });
+      Save.pushHistory({ mode: 'classic', label: `第${Game.levelIdx + 1}关 ${LEVELS[Game.levelIdx].song}`, score: Game.score, elapsed: Game.elapsedSec(), win: false });
       this.showModal(`
         <div class="lose-face">⏰</div>
         <h2 class="modal-title">时间到啦！</h2>
@@ -728,6 +728,22 @@ const UI = {
     const dailyStr = today ? `今日挑战 ⭐${today.stars} ${today.score}分` : '今日挑战未完成';
     this.els.menuStats.textContent =
       `闯关 ${Math.min(d.unlocked + 1, LEVELS.length)}/${LEVELS.length} · ⭐ ${totalStars}/${LEVELS.length * 3} · 无尽 ${d.endlessBest} 轮 · 🏅 ${d.achievements.length}/${ACHIEVEMENTS.length} · ${dailyStr}`;
+    this.renderDailyCal();
+  },
+
+  /* 最近 7 天每日挑战打卡日历 */
+  renderDailyCal() {
+    const el = this.els.dailyCal;
+    if (!el) return;
+    const now = new Date();
+    const chips = [];
+    for (let i = 6; i >= 0; i--) {
+      const d = new Date(now.getFullYear(), now.getMonth(), now.getDate() - i);
+      const key = d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
+      const rec = Save.data.daily[key];
+      chips.push(`<span class="cal-day ${rec ? 'done' : ''} ${i === 0 ? 'today' : ''}" title="${key}${rec ? ' · ' + rec.score + '分' : ''}">${rec ? '⭐' : '·'}<small>${'日一二三四五六'[d.getDay()]}</small></span>`);
+    }
+    el.innerHTML = chips.join('');
   },
 
   /* ---------- 杂项特效 ---------- */

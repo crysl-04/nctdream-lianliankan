@@ -74,6 +74,7 @@ const Game = {
     this.matchCount = 0;
     this.sameTypeStreak = 0;
     this.lastMatchType = 0;
+    this.startTime = Date.now();
 
     const cells = rows * cols;
     const pairs = cells / 2;
@@ -193,6 +194,8 @@ const Game = {
   },
 
   remaining() { return this.tiles.filter(t => t.alive).length; },
+
+  elapsedSec() { return Math.max(0, Math.round((Date.now() - this.startTime) / 1000)); },
 
   findAnyPair() {
     const byType = {};
