@@ -299,6 +299,18 @@ button { font-family: inherit; cursor: pointer; border: none; background: none; 
 .ach-text small { font-size: 11px; color: #8b98b5; }
 @media (max-width: 480px) { .ach-grid { grid-template-columns: 1fr; } }
 
+/* 装扮图鉴 */
+.col-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(128px, 1fr)); gap: 10px; }
+.col-card {
+  display: flex; flex-direction: column; align-items: center; gap: 2px;
+  border-radius: 14px; padding: 10px 6px; text-align: center;
+}
+.col-card.on { background: #fff; border: 2px solid #bae6fd; box-shadow: 0 3px 10px rgba(80,100,180,.14); }
+.col-card.off { background: #f1f5fb; border: 2px dashed #dbe3f0; filter: grayscale(1); opacity: .72; }
+.col-card .col-avatar .avatar-svg { width: 68px; height: 68px; }
+.col-song { font-size: 12px; font-weight: 800; }
+.col-era { font-size: 10px; color: #8b98b5; }
+
 /* 战绩列表 */
 .hist-list { display: flex; flex-direction: column; gap: 8px; }
 .hist-row {

@@ -16,7 +16,7 @@ const UI = {
       screenMenu: $('screen-menu'), screenGame: $('screen-game'),
       btnClassic: $('btn-classic'), btnEndless: $('btn-endless'),
       btnDaily: $('btn-daily'), btnAchievements: $('btn-achievements'),
-      btnHistory: $('btn-history'), btnHowto: $('btn-howto'),
+      btnHistory: $('btn-history'), btnHowto: $('btn-howto'), btnCollection: $('btn-collection'),
       btnLevels: $('btn-levels'), btnAbout: $('btn-about'), btnSettings: $('btn-settings'),
       menuStats: $('menu-stats'),
       btnExit: $('btn-exit'), hudLevelName: $('hud-level-name'), hudMode: $('hud-mode'),
@@ -50,6 +50,7 @@ const UI = {
     const map = {
       'btn-classic': 'startClassic', 'btn-daily': 'startDaily', 'btn-endless': 'startEndless',
       'btn-levels': 'levels', 'btn-about': 'about', 'btn-howto': 'howto', 'btn-achievements': 'achievements',
+      'btn-collection': 'collection',
       'btn-history': 'history', 'btn-settings': 'settings',
       'menu-slogan': 'slogan', 'menu-foot': 'menuFoot',
       'hud-score-label': 'score', 'hud-combo-label': 'combo',
@@ -61,7 +62,7 @@ const UI = {
       if (el) el.textContent = t(map[id]);
     }
     const ver = document.getElementById('menu-version');
-    if (ver) ver.textContent = 'v2.1 · Made with 💚 for NCTzens';
+    if (ver) ver.textContent = 'v2.2 · Made with 💚 for NCTzens';
     this.renderMenuStats(); /* 每日按钮文案也依赖语言 */
   },
 
@@ -118,6 +119,7 @@ const UI = {
     this.els.btnAchievements.addEventListener('click', () => this.showAchievementsModal());
     this.els.btnHistory.addEventListener('click', () => this.showHistoryModal());
     this.els.btnHowto.addEventListener('click', () => this.showHowtoModal());
+    this.els.btnCollection.addEventListener('click', () => this.showCollectionModal());
     this.els.btnLevels.addEventListener('click', () => this.showLevelsModal());
     this.els.btnAbout.addEventListener('click', () => this.showAboutModal());
     this.els.btnSettings.addEventListener('click', () => this.showSettingsModal());
@@ -580,6 +582,11 @@ const UI = {
       const stars = Game.stars();
       const hard = Game.difficulty === 'hard';
       Save.recordWin(Game.levelIdx, stars, Game.score, hard);
+      /* 通关解锁该关的时代装扮 */
+      if (Save.unlockEra(LEVELS[Game.levelIdx].era)) {
+        SFX.achieveFx();
+        setTimeout(() => this.toast(t('collectionNew')), 2200);
+      }
       Save.pushHistory({ mode: "classic", label: `${hard ? '🔥' : ''}第${Game.levelIdx + 1}关 ${LEVELS[Game.levelIdx].song}`, score: Game.score, elapsed: Game.elapsedSec(), win: true });
       const isLast = Game.levelIdx >= LEVELS.length - 1;
       const starStr = '⭐'.repeat(stars) + '✩'.repeat(3 - stars);
@@ -757,6 +764,24 @@ const UI = {
         <button class="btn primary" data-action="start-level" data-idx="0">${t('startClassic')}</button>
         <button class="btn ghost" data-action="close-modal">${t('closeModal')}</button>
       </div>`);
+  },
+
+  showCollectionModal() {
+    const got = Save.data.collection;
+    const cards = LEVELS.map((L, i) => {
+      const unlocked = got.includes(L.era);
+      const member = MEMBERS[i % MEMBERS.length];
+      return `<div class="col-card ${unlocked ? 'on' : 'off'}">
+        <div class="col-avatar">${avatarSVG(member, 68, unlocked ? L.era : null)}</div>
+        <b class="col-song">${unlocked ? L.song : '???'}</b>
+        <small class="col-era">${unlocked ? `第${i + 1}关` : '🔒 通关第' + (i + 1) + '关解锁'}</small>
+      </div>`;
+    }).join('');
+    this.showModal(`
+      <h2 class="modal-title">${t('collectionTitle')} ${got.length}/${LEVELS.length} 👔</h2>
+      <div class="col-grid">${cards}</div>
+      <p class="modal-sub">${t('collectionTip')}</p>
+      <div class="modal-actions"><button class="btn ghost" data-action="close-modal">${t('closeModal')}</button></div>`);
   },
 
   showLevelsModal() {

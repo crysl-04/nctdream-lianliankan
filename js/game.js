@@ -342,7 +342,7 @@ const Game = {
 /* ---------- 存档 ---------- */
 const Save = {
   KEY: 'nct_dream_llk_v1',
-  data: { unlocked: 0, stars: {}, best: {}, starsHard: {}, bestHard: {}, endlessBest: 0, daily: {}, achievements: [], history: [], settings: { sfx: true, music: true, theme: 'dream', lang: 'zh', difficulty: 'normal' } },
+  data: { unlocked: 0, stars: {}, best: {}, starsHard: {}, bestHard: {}, endlessBest: 0, daily: {}, achievements: [], history: [], collection: [], settings: { sfx: true, music: true, theme: 'dream', lang: 'zh', difficulty: 'normal' } },
 
   load() {
     try {
@@ -356,6 +356,7 @@ const Save = {
         this.data.history = d.history || [];
         this.data.starsHard = d.starsHard || {};
         this.data.bestHard = d.bestHard || {};
+        this.data.collection = d.collection || [];
       }
     } catch (e) { /* 忽略损坏存档 */ }
     return this.data;
@@ -438,8 +439,17 @@ const Save = {
     return fresh;
   },
 
+  /* 装扮图鉴：通关对应关卡解锁时代装扮，返回是否为新解锁 */
+  unlockEra(eraId) {
+    const c = this.data.collection;
+    if (c.includes(eraId)) return false;
+    c.push(eraId);
+    this.write();
+    return true;
+  },
+
   reset() {
-    this.data = { unlocked: 0, stars: {}, best: {}, starsHard: {}, bestHard: {}, endlessBest: 0, daily: {}, achievements: [], history: [], settings: this.data.settings };
+    this.data = { unlocked: 0, stars: {}, best: {}, starsHard: {}, bestHard: {}, endlessBest: 0, daily: {}, achievements: [], history: [], collection: [], settings: this.data.settings };
     this.write();
   }
 };

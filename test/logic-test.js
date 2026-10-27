@@ -339,5 +339,17 @@ console.log('--- 成就与存档 ---');
   }
 }
 
+/* ---------- 9. 装扮图鉴 ---------- */
+console.log('--- 装扮图鉴 ---');
+{
+  Save.data.collection = [];
+  check('首次解锁返回 true', Save.unlockEra('gum') === true);
+  check('重复解锁返回 false', Save.unlockEra('gum') === false);
+  Save.unlockEra('beatbox');
+  check('收集记录正确', Save.data.collection.length === 2 && Save.data.collection.includes('beatbox'));
+  check('图鉴键存在于双语字典', 'collection' in I18N.zh && 'collection' in I18N.en && 'collectionTip' in I18N.zh && 'collectionTip' in I18N.en);
+  Save.data.collection = [];
+}
+
 console.log(failures === 0 ? '\n🎉 全部测试通过' : `\n💥 ${failures} 个测试失败`);
 process.exit(failures === 0 ? 0 : 1);
