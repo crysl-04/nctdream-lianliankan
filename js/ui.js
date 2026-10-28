@@ -463,7 +463,8 @@ const UI = {
       text = `🌈 NCT DREAM 连连看\n🎶 第${Game.levelIdx + 1}关《${L.song}》${stars}\n💯 得分 ${Game.score} · 最高连击 x${Game.maxCombo}${Game.itemsUsed ? '' : ' · 零道具通关!'}`;
     } else if (Game.mode === 'daily') {
       const stars = '⭐'.repeat(Game.stars());
-      text = `🌈 NCT DREAM 连连看 · 每日挑战\n📅 ${Game.dailyDate} ${stars}\n💯 得分 ${Game.score} · 最高连击 x${Game.maxCombo}`;
+      const streak = Save.dailyStreak();
+      text = `🌈 NCT DREAM 连连看 · 每日挑战\n📅 ${Game.dailyDate} ${stars}${streak >= 2 ? ` · 🔥${streak}天连续` : ''}\n💯 得分 ${Game.score} · 最高连击 x${Game.maxCombo}`;
     } else {
       text = `🌈 NCT DREAM 连连看 · 无尽模式\n♾️ 通过 ${Game.boardsCleared} 轮\n💯 总分 ${Game.score}`;
     }
@@ -860,14 +861,16 @@ const UI = {
   renderMenuStats() {
     const d = Save.data;
     const totalStars = Object.values(d.stars).reduce((a, b) => a + b, 0);
+    const hardStars = Object.values(d.starsHard || {}).reduce((a, b) => a + b, 0);
     const today = d.daily[todayKey()];
     const dailyStr = today ? tf('dailyDoneStat', { s: today.stars, p: today.score }) : t('dailyTodo');
+    const hardStr = hardStars > 0 ? ` · 🔥${hardStars}` : '';
     this.els.menuStats.textContent = tf('menuStats', {
       a: Math.min(d.unlocked + 1, LEVELS.length), b: LEVELS.length,
       c: totalStars, d: LEVELS.length * 3,
       e: d.endlessBest, f: d.achievements.length, g: ACHIEVEMENTS.length,
       daily: dailyStr
-    });
+    }) + hardStr;
     /* 今日已打卡时更新每日挑战按钮文案；装扮按钮显示收集进度 */
     if (this.els.btnDaily) {
       this.els.btnDaily.textContent = today ? t('dailyDone') : t('startDaily');
