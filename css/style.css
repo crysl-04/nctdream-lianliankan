@@ -242,6 +242,17 @@ button { font-family: inherit; cursor: pointer; border: none; background: none; 
 .stars { text-align: center; font-size: 34px; letter-spacing: 6px; margin: 6px 0; animation: starIn .6s ease; }
 @keyframes starIn { from { transform: scale(.4); opacity: 0; } }
 
+/* 胜利弹窗内的新装扮预览 */
+.new-era {
+  display: flex; align-items: center; justify-content: center; gap: 10px;
+  width: fit-content; margin: 10px auto;
+  background: linear-gradient(120deg, #fef9c3, #fce7f3);
+  border: 2px solid #fbbf24; border-radius: 14px;
+  padding: 5px 16px 5px 6px; font-weight: 800; font-size: 14px; color: #92400e;
+  animation: starIn .6s ease;
+}
+.new-era .avatar-svg { width: 56px; height: 56px; }
+
 /* 关卡选择 */
 .level-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(108px, 1fr)); gap: 10px; }
 .level-card {

@@ -143,7 +143,9 @@ const ACHIEVEMENTS = [
   { id: 'score500',   name: '高分少年',   desc: '单局得分超过 500',        icon: '💯' },
   { id: 'score1000',  name: '千分传说',   desc: '单局得分超过 1000',       icon: '🎯' },
   { id: 'marathon',   name: '耐力赛',     desc: '单局用时超过 10 分钟',    icon: '⏳' },
-  { id: 'night_owl',  name: '夜猫子',     desc: '在凌晨 0-5 点完成一局',   icon: '🦉' }
+  { id: 'night_owl',  name: '夜猫子',     desc: '在凌晨 0-5 点完成一局',   icon: '🦉' },
+  { id: 'wardrobe7',  name: '时装周',     desc: '收集 7 套装扮',           icon: '👗' },
+  { id: 'wardrobe14', name: '全能收藏家', desc: '收集全部 14 套装扮',      icon: '💎' }
 ];
 
 /* ---------- 多语言（中/英） ---------- */
@@ -299,7 +301,9 @@ const ACHIEVEMENTS_EN = {
   score500:   { name: 'High Scorer',    desc: 'Score over 500 in one game' },
   score1000:  { name: 'Thousand Club',  desc: 'Score over 1000 in one game' },
   marathon:   { name: 'Marathon',       desc: 'A single game longer than 10 minutes' },
-  night_owl:  { name: 'Night Owl',      desc: 'Finish a game between 0-5 AM' }
+  night_owl:  { name: 'Night Owl',      desc: 'Finish a game between 0-5 AM' },
+  wardrobe7:  { name: 'Fashion Week',   desc: 'Collect 7 outfits' },
+  wardrobe14: { name: 'Ultimate Collector', desc: 'Collect all 14 outfits' }
 };
 function achName(a) {
   const lang = (typeof Save !== 'undefined' && Save.data && Save.data.settings && Save.data.settings.lang) || 'zh';

@@ -62,7 +62,7 @@ const UI = {
       if (el) el.textContent = t(map[id]);
     }
     const ver = document.getElementById('menu-version');
-    if (ver) ver.textContent = 'v2.2 · Made with 💚 for NCTzens';
+    if (ver) ver.textContent = 'v2.3 · Made with 💚 for NCTzens';
     this.renderMenuStats(); /* 每日按钮文案也依赖语言 */
   },
 
@@ -507,6 +507,8 @@ const UI = {
     if (context === 'win' && Game.mode === 'classic') {
       if (Game.levelIdx >= 6) ids.push('level7');
       if (Game.levelIdx >= LEVELS.length - 1) ids.push('clear_all');
+      if (Save.data.collection.length >= 7) ids.push('wardrobe7');
+      if (Save.data.collection.length >= LEVELS.length) ids.push('wardrobe14');
     }
     if (context === 'daily') {
       ids.push('daily');
@@ -574,7 +576,6 @@ const UI = {
     SFX.win();
     this.confetti();
     this.updateHUD();
-    this.checkAchievements('win');
 
     const statsLine = `<p class="modal-lines">${tf('bonusLine', { b: bonus, s: Game.score, c: Game.maxCombo, t: Game.elapsedSec() })}${Game.itemsUsed ? tf('usedItems', { n: Game.itemsUsed }) : t('zeroItems').replace(/^/, ' · ')}</p>`;
 
@@ -583,10 +584,12 @@ const UI = {
       const hard = Game.difficulty === 'hard';
       Save.recordWin(Game.levelIdx, stars, Game.score, hard);
       /* 通关解锁该关的时代装扮 */
-      if (Save.unlockEra(LEVELS[Game.levelIdx].era)) {
+      const newEra = Save.unlockEra(LEVELS[Game.levelIdx].era);
+      if (newEra) {
         SFX.achieveFx();
         setTimeout(() => this.toast(t('collectionNew')), 2200);
       }
+      this.checkAchievements('win');
       Save.pushHistory({ mode: "classic", label: `${hard ? '🔥' : ''}第${Game.levelIdx + 1}关 ${LEVELS[Game.levelIdx].song}`, score: Game.score, elapsed: Game.elapsedSec(), win: true });
       const isLast = Game.levelIdx >= LEVELS.length - 1;
       const starStr = '⭐'.repeat(stars) + '✩'.repeat(3 - stars);
@@ -595,6 +598,7 @@ const UI = {
         <h2 class="modal-title">${isLast ? t('allClearTitle') : t('winTitle')}</h2>
         <div class="stars">${starStr}</div>
         ${statsLine}
+        ${newEra ? `<div class="new-era">${avatarSVG(MEMBERS[Game.levelIdx % MEMBERS.length], 64, LEVELS[Game.levelIdx].era)}<span>🎨 ${t('collectionNew')}</span></div>` : ''}
         <p class="modal-sub">${hard ? t('hardBonus') + ' · ' : ''}${tf('bestScore', { s: (hard ? Save.data.bestHard[Game.levelIdx] : Save.data.best[Game.levelIdx]) || Game.score })}</p>
         <div class="modal-actions">
           ${isLast ? '' : `<button class="btn primary" data-action="next-level">${t('nextLevel')}</button>`}
