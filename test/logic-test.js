@@ -363,9 +363,18 @@ console.log('--- 成就与存档 ---');
     check('棋盘总数不变', Game.tiles.length === LEVELS[0].rows * LEVELS[0].cols);
     check('本命比其它成员多一对', counts[6] >= 2 && Object.values(counts).reduce((a, b) => a + b, 0) === Game.tiles.length);
 
-    /* 本命消除加分 +2 */
+    /* 本命消除加分 +2（选一对可连通的本命卡片） */
     Game.combo = 0; Game.lastMatchAt = 0; Game.score = 0;
-    const biasPair = Game.tiles.filter(t => t.type === 6).slice(0, 2);
+    const biasTiles = Game.tiles.filter(t => t.type === 6);
+    let biasPair = null;
+    for (let i = 0; i < biasTiles.length && !biasPair; i++) {
+      for (let j = i + 1; j < biasTiles.length; j++) {
+        if (Game.canConnect(biasTiles[i], biasTiles[j], false)) {
+          biasPair = [biasTiles[i], biasTiles[j]];
+          break;
+        }
+      }
+    }
     Game.selected = null;
     Game.tryMatch(biasPair[0]);
     const r2 = Game.tryMatch(biasPair[1]);
