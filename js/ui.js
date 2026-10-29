@@ -62,7 +62,7 @@ const UI = {
       if (el) el.textContent = t(map[id]);
     }
     const ver = document.getElementById('menu-version');
-    if (ver) ver.textContent = 'v2.3 · Made with 💚 for NCTzens';
+    if (ver) ver.textContent = 'v2.4 · Made with 💚 for NCTzens';
     this.renderMenuStats(); /* 每日按钮文案也依赖语言 */
   },
 
@@ -303,7 +303,8 @@ const UI = {
     if (res.status === 'matched') {
       const aEl = this.tileEls.get(res.a), bEl = this.tileEls.get(res.b);
       const color = memberByType(res.a.type).color;
-      SFX.match(res.combo);
+      SFX.match(res.combo, res.a.type);
+      if (navigator.vibrate) { try { navigator.vibrate(20); } catch (e) { /* 不支持则忽略 */ } }
       this.drawPath(res.path, color);
       if (aEl) aEl.classList.add('matched');
       if (bEl) bEl.classList.add('matched');
@@ -327,6 +328,7 @@ const UI = {
 
     /* mismatch */
     SFX.mismatch();
+    if (navigator.vibrate) { try { navigator.vibrate(60); } catch (e) { /* 不支持则忽略 */ } }
     const fa = this.tileEls.get(res.a), fb = this.tileEls.get(res.b);
     if (fa) { fa.classList.add('shake'); setTimeout(() => fa.classList.remove('shake'), 350); }
     if (fb) { fb.classList.add('shake'); setTimeout(() => fb.classList.remove('shake'), 350); }
@@ -613,8 +615,9 @@ const UI = {
       Save.pushHistory({ mode: 'daily', label: `每日挑战 ${Game.dailyDate}`, score: Game.score, elapsed: Game.elapsedSec(), win: true });
       this.checkAchievements('daily');
       const starStr = '⭐'.repeat(stars) + '✩'.repeat(3 - stars);
+      const dailyEra = eraOfBoard();
       this.showModal(`
-        <div class="win-face">${avatarSVG(MEMBERS[djb2Hash(Game.dailyDate) % MEMBERS.length], 90)}</div>
+        <div class="win-face">${avatarSVG(MEMBERS[djb2Hash(Game.dailyDate) % MEMBERS.length], 90, dailyEra)}</div>
         <h2 class="modal-title">${t('dailyWinTitle')}</h2>
         <div class="stars">${starStr}</div>
         ${statsLine}
@@ -629,7 +632,7 @@ const UI = {
       Save.pushHistory({ mode: 'endless', label: `无尽 ${Game.boardsCleared} 轮`, score: Game.score, elapsed: Game.elapsedSec(), win: true });
       this.checkAchievements('endless');
       this.showModal(`
-        <div class="win-face">${avatarSVG(MEMBERS[(Game.boardsCleared) % MEMBERS.length], 90)}</div>
+        <div class="win-face">${avatarSVG(MEMBERS[(Game.boardsCleared) % MEMBERS.length], 90, eraOfBoard())}</div>
         <h2 class="modal-title">${tf('roundWinTitle', { n: Game.endlessRound })}</h2>
         <p class="modal-lines">${tf('totalProgress', { n: Game.boardsCleared, s: Game.score })}</p>
         <p class="modal-sub">${tf('endlessBest', { n: Save.data.endlessBest })}</p>

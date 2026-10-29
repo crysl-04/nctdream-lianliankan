@@ -316,6 +316,7 @@ console.log('--- 成就与存档 ---');
     const plain = avatarSVG(MEMBERS[0], 60);
     const gum = avatarSVG(MEMBERS[0], 60, 'gum');
     const beatbox = avatarSVG(MEMBERS[2], 60, 'beatbox');
+    check('头像眼睛带眨眼类', plain.includes('class="eye"'));
     check('无装扮时头像不含配饰', !plain.includes('cy="73"') && plain.length < gum.length);
     check('gum 装扮含泡泡', gum.includes('cx="50" cy="73"'));
     check('beatbox 装扮含耳机', beatbox.includes('a23 23'));

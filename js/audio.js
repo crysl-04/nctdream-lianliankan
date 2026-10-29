@@ -54,8 +54,11 @@ const SFX = {
   clockFx() { this.tone(520, 0.1, 'sine', 0.3); this.tone(780, 0.14, 'sine', 0.3, 0.1); },
   tick()    { this.tone(880, 0.045, 'square', 0.1); },
 
-  match(combo) {
-    const base = 500 + Math.min(combo || 1, 12) * 28;
+  /* 消除音效：基础音高随成员不同（按类型序号），Chenle 最高像海豚音 */
+  match(combo, memberType) {
+    const idx = Math.max(0, Math.min(6, (memberType || 1) - 1));
+    const memberShift = [0, 2, -1, 1, 3, 5, -2][idx];
+    const base = 500 + Math.min(combo || 1, 12) * 28 + memberShift;
     this.tone(base, 0.1, 'triangle', 0.36);
     this.tone(base * 1.25, 0.11, 'triangle', 0.3, 0.06);
     this.tone(base * 1.5, 0.15, 'triangle', 0.26, 0.12);

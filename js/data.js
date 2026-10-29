@@ -370,8 +370,8 @@ function avatarSVG(member, size, eraId) {
     <ellipse cx="75" cy="57" rx="5" ry="6" fill="#ffdfca"/>
     <ellipse cx="50" cy="57" rx="24" ry="22.5" fill="#ffdfca"/>
     ${hair}
-    <ellipse cx="41" cy="56" rx="3" ry="4.3" fill="#453a52"/>
-    <ellipse cx="59" cy="56" rx="3" ry="4.3" fill="#453a52"/>
+    <ellipse class="eye" cx="41" cy="56" rx="3" ry="4.3" fill="#453a52"/>
+    <ellipse class="eye" cx="59" cy="56" rx="3" ry="4.3" fill="#453a52"/>
     <circle cx="42.2" cy="54.6" r="1.1" fill="#fff"/>
     <circle cx="60.2" cy="54.6" r="1.1" fill="#fff"/>
     <ellipse cx="33.5" cy="64" rx="4.2" ry="2.6" fill="#ffb3c0" opacity=".75"/>

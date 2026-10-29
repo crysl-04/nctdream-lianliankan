@@ -151,6 +151,20 @@ button { font-family: inherit; cursor: pointer; border: none; background: none; 
   transition: box-shadow .15s, transform .15s;
 }
 .tile .avatar-svg { width: 72%; height: 72%; pointer-events: none; }
+
+/* 头像眨眼动画（棋盘内随机错峰） */
+.avatar-svg .eye {
+  transform-box: fill-box;
+  transform-origin: center;
+  animation: blink 4.8s infinite;
+}
+.tile:nth-child(2n) .eye { animation-delay: .9s; }
+.tile:nth-child(3n) .eye { animation-delay: 1.7s; }
+.tile:nth-child(5n) .eye { animation-delay: 2.6s; }
+@keyframes blink {
+  0%, 94%, 100% { transform: scaleY(1); }
+  96.5% { transform: scaleY(0.12); }
+}
 .tile-name {
   font-size: 9px; font-weight: 800; color: var(--mcolor); letter-spacing: .4px;
   line-height: 1; margin-top: 1px; pointer-events: none;
