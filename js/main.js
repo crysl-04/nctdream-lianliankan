@@ -6,10 +6,13 @@
 window.addEventListener('DOMContentLoaded', () => {
   UI.init();
 
-  /* 菜单页展示七位成员小头像 */
+  /* 菜单页展示七位成员头像（可点击选本命） */
   const box = document.getElementById('menu-avatars');
   if (box) {
-    box.innerHTML = MEMBERS.map(m => avatarSVG(m, 52)).join('');
+    box.innerHTML = MEMBERS.map(m =>
+      `<button class="menu-avatar-btn" data-bias="${m.id}" aria-label="${m.cn}">${avatarSVG(m, 52)}</button>`
+    ).join('');
+    UI.refreshBiasUI();
   }
 });
 

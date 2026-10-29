@@ -340,17 +340,56 @@ console.log('--- 成就与存档 ---');
   }
 }
 
-/* ---------- 9. 装扮图鉴 ---------- */
-console.log('--- 装扮图鉴 ---');
-{
-  Save.data.collection = [];
-  check('首次解锁返回 true', Save.unlockEra('gum') === true);
-  check('重复解锁返回 false', Save.unlockEra('gum') === false);
-  Save.unlockEra('beatbox');
-  check('收集记录正确', Save.data.collection.length === 2 && Save.data.collection.includes('beatbox'));
-  check('图鉴键存在于双语字典', 'collection' in I18N.zh && 'collection' in I18N.en && 'collectionTip' in I18N.zh && 'collectionTip' in I18N.en);
-  Save.data.collection = [];
-}
+  /* ---------- 9. 装扮图鉴 ---------- */
+  console.log('--- 装扮图鉴 ---');
+  {
+    Save.data.collection = [];
+    check('首次解锁返回 true', Save.unlockEra('gum') === true);
+    check('重复解锁返回 false', Save.unlockEra('gum') === false);
+    Save.unlockEra('beatbox');
+    check('收集记录正确', Save.data.collection.length === 2 && Save.data.collection.includes('beatbox'));
+    check('图鉴键存在于双语字典', 'collection' in I18N.zh && 'collection' in I18N.en && 'collectionTip' in I18N.zh && 'collectionTip' in I18N.en);
+    Save.data.collection = [];
+  }
+
+  /* ---------- 10. 本命系统 ---------- */
+  console.log('--- 本命系统 ---');
+  {
+    Save.data.settings.bias = 'chenle'; // 类型 6
+    Game.startClassic(0); Game.stopTimer();
+    const counts = {};
+    for (const t of Game.tiles) counts[t.type] = (counts[t.type] || 0) + 1;
+    check('本命类型正确', Game.biasType === 6);
+    check('棋盘总数不变', Game.tiles.length === LEVELS[0].rows * LEVELS[0].cols);
+    check('本命比其它成员多一对', counts[6] >= 2 && Object.values(counts).reduce((a, b) => a + b, 0) === Game.tiles.length);
+
+    /* 本命消除加分 +2 */
+    Game.combo = 0; Game.lastMatchAt = 0; Game.score = 0;
+    const biasPair = Game.tiles.filter(t => t.type === 6).slice(0, 2);
+    Game.selected = null;
+    Game.tryMatch(biasPair[0]);
+    const r2 = Game.tryMatch(biasPair[1]);
+    check('本命消除 +2 分', r2.status === 'matched' && r2.gain === 12 && Game.biasMatches === 1, r2);
+
+    /* 无本命时无加成 */
+    Save.data.settings.bias = '';
+    Game.startClassic(0); Game.stopTimer();
+    check('无本命时 biasType=0', Game.biasType === 0);
+
+    /* 带本命完全通关 */
+    Save.data.settings.bias = 'mark';
+    Game.startClassic(0); Game.stopTimer();
+    let guard = 0;
+    while (Game.remaining() > 0 && guard++ < 5000) {
+      const pair = Game.findAnyPair();
+      if (!pair) { Game.shufflePositions(); Game.ensureSolvable(); continue; }
+      pair[0].alive = false; pair[1].alive = false;
+      Game.grid[pair[0].r][pair[0].c] = 0;
+      Game.grid[pair[1].r][pair[1].c] = 0;
+    }
+    check('带本命棋盘可完全通关', Game.remaining() === 0);
+    Save.data.settings.bias = '';
+  }
 
 console.log(failures === 0 ? '\n🎉 全部测试通过' : `\n💥 ${failures} 个测试失败`);
 process.exit(failures === 0 ? 0 : 1);

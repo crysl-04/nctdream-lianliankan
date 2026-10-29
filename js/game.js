@@ -113,6 +113,28 @@ const Game = {
         this.cellAt[r + ',' + c] = tile;
       }
     }
+
+    /* 本命：把一对其它成员的卡片替换成成对本命（棋盘总数不变） */
+    const biasId = (typeof Save !== 'undefined' && Save.data.settings.bias) || '';
+    const biasIdx = MEMBERS.findIndex(m => m.id === biasId);
+    this.biasType = biasIdx >= 0 ? biasIdx + 1 : 0;
+    this.biasMatches = 0;
+    if (this.biasType) {
+      const counts = {};
+      for (const t of this.tiles) counts[t.type] = (counts[t.type] || 0) + 1;
+      const donor = Object.keys(counts).map(Number).find(x => x !== this.biasType && counts[x] >= 2);
+      if (donor) {
+        let swapped = 0;
+        for (const t of this.tiles) {
+          if (t.type === donor && swapped < 2) {
+            t.type = this.biasType;
+            this.grid[t.r][t.c] = this.biasType;
+            swapped++;
+          }
+        }
+      }
+    }
+
     this.ensureSolvable();
 
     this.levelSeconds = seconds;
@@ -195,7 +217,9 @@ const Game = {
       this.matchCount++;
       this.sameTypeStreak = a.type === this.lastMatchType ? this.sameTypeStreak + 1 : 1;
       this.lastMatchType = a.type;
-      const gain = Math.round((10 + Math.min(this.combo - 1, 9) * 5) * (this._scoreMul || 1));
+      if (this.biasType && a.type === this.biasType) this.biasMatches++;
+      const biasBonus = this.biasType && a.type === this.biasType ? 2 : 0;
+      const gain = Math.round((10 + Math.min(this.combo - 1, 9) * 5) * (this._scoreMul || 1)) + biasBonus;
       this.score += gain;
       return { status: 'matched', path, a, b, gain, combo: this.combo };
     }
@@ -342,7 +366,7 @@ const Game = {
 /* ---------- 存档 ---------- */
 const Save = {
   KEY: 'nct_dream_llk_v1',
-  data: { unlocked: 0, stars: {}, best: {}, starsHard: {}, bestHard: {}, endlessBest: 0, daily: {}, achievements: [], history: [], collection: [], settings: { sfx: true, music: true, theme: 'dream', lang: 'zh', difficulty: 'normal' } },
+  data: { unlocked: 0, stars: {}, best: {}, starsHard: {}, bestHard: {}, endlessBest: 0, daily: {}, achievements: [], history: [], collection: [], settings: { sfx: true, music: true, theme: 'dream', lang: 'zh', difficulty: 'normal', bias: '' } },
 
   load() {
     try {
@@ -350,7 +374,7 @@ const Save = {
       if (raw) {
         const d = JSON.parse(raw);
         this.data = Object.assign(this.data, d);
-        this.data.settings = Object.assign({ sfx: true, music: true, theme: 'dream', lang: 'zh', difficulty: 'normal' }, d.settings || {});
+        this.data.settings = Object.assign({ sfx: true, music: true, theme: 'dream', lang: 'zh', difficulty: 'normal', bias: '' }, d.settings || {});
         this.data.daily = d.daily || {};
         this.data.achievements = d.achievements || [];
         this.data.history = d.history || [];

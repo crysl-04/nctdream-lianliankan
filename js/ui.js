@@ -40,9 +40,38 @@ const UI = {
     this.spawnBgDeco();
     this.bindEvents();
     this.bindKeyboard();
+    this.bindBiasPicker();
     this.applyStaticI18n();
     this.renderMenuStats();
     this.showScreen('menu');
+  },
+
+  /* 本命选择：点击菜单头像即可锁定 */
+  bindBiasPicker() {
+    const box = document.getElementById('menu-avatars');
+    if (!box) return;
+    box.addEventListener('click', e => {
+      const btn = e.target.closest('[data-bias]');
+      if (!btn) return;
+      SFX.ensure();
+      Save.data.settings.bias = Save.data.settings.bias === btn.dataset.bias ? '' : btn.dataset.bias;
+      Save.write();
+      this.refreshBiasUI();
+      const m = MEMBERS.find(x => x.id === Save.data.settings.bias);
+      this.toast(m ? tf('biasSet', { s: m.cn + ' ' + m.emoji }) : t('biasHint'));
+      SFX.select();
+    });
+  },
+
+  refreshBiasUI() {
+    const bias = Save.data.settings.bias;
+    document.querySelectorAll('.menu-avatar-btn').forEach(b => b.classList.toggle('selected', b.dataset.bias === bias));
+    const hud = document.getElementById('hud-bias');
+    if (hud) {
+      const m = MEMBERS.find(x => x.id === bias);
+      hud.innerHTML = m ? avatarSVG(m, 26) : '';
+      hud.classList.toggle('has', !!m);
+    }
   },
 
   /* 静态文案随语言设置刷新（菜单按钮、HUD、道具栏、页脚） */
@@ -52,7 +81,7 @@ const UI = {
       'btn-levels': 'levels', 'btn-about': 'about', 'btn-howto': 'howto', 'btn-achievements': 'achievements',
       'btn-collection': 'collection',
       'btn-history': 'history', 'btn-settings': 'settings',
-      'menu-slogan': 'slogan', 'menu-foot': 'menuFoot',
+      'menu-slogan': 'slogan', 'menu-foot': 'menuFoot', 'bias-hint': 'biasHint',
       'hud-score-label': 'score', 'hud-combo-label': 'combo',
       'item-hint-label': 'itemHint', 'item-shuffle-label': 'itemShuffle',
       'item-clock-label': 'itemClock', 'item-restart-label': 'itemRestart'
@@ -62,7 +91,7 @@ const UI = {
       if (el) el.textContent = t(map[id]);
     }
     const ver = document.getElementById('menu-version');
-    if (ver) ver.textContent = 'v2.4 · Made with 💚 for NCTzens';
+    if (ver) ver.textContent = 'v2.5 · Made with 💚 for NCTzens';
     this.renderMenuStats(); /* 每日按钮文案也依赖语言 */
   },
 
@@ -229,7 +258,7 @@ const UI = {
     for (const t of Game.tiles) {
       const m = memberByType(t.type);
       const btn = document.createElement('button');
-      btn.className = 'tile';
+      btn.className = 'tile' + (Game.biasType && t.type === Game.biasType ? ' bias' : '');
       btn.style.gridRow = (t.r + 1);
       btn.style.gridColumn = (t.c + 1);
       btn.style.setProperty('--mcolor', m.color);
@@ -273,6 +302,7 @@ const UI = {
       const el = this.tileEls.get(t);
       if (!el) continue;
       const m = memberByType(t.type);
+      el.classList.toggle('bias', !!Game.biasType && t.type === Game.biasType);
       el.style.setProperty('--mcolor', m.color);
       el.style.setProperty('--mcolor-light', m.light);
       if (eraBg) el.style.setProperty('--era-bg', eraBg);
@@ -459,6 +489,8 @@ const UI = {
   shareScore() {
     let text = '';
     const site = location.origin + location.pathname;
+    const biasM = MEMBERS.find(m => m.id === Save.data.settings.bias);
+    const biasLine = biasM ? `\n${tf('biasLine', { s: biasM.cn + ' ' + biasM.emoji })}` : '';
     if (Game.mode === 'classic') {
       const L = LEVELS[Game.levelIdx];
       const stars = '⭐'.repeat(Game.stars());
@@ -470,6 +502,7 @@ const UI = {
     } else {
       text = `🌈 NCT DREAM 连连看 · 无尽模式\n♾️ 通过 ${Game.boardsCleared} 轮\n💯 总分 ${Game.score}`;
     }
+    text += biasLine;
     text += `\n▶ ${site}`;
     const done = () => this.toast(t('toastCopied'));
     if (navigator.clipboard && navigator.clipboard.writeText) {
@@ -506,6 +539,7 @@ const UI = {
       if (Game.elapsedSec() > 600) ids.push('marathon');
       const hour = new Date().getHours();
       if (hour >= 0 && hour < 5) ids.push('night_owl');
+      if (Game.biasType && (Game.biasMatches || 0) >= 5) ids.push('bias_power');
     }
     if (context === 'win' && Game.mode === 'classic') {
       if (Game.levelIdx >= 6) ids.push('level7');

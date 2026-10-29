@@ -8,7 +8,7 @@
   <meta name="theme-color" content="#34d399" />
   <link rel="icon" href="icon.svg" type="image/svg+xml" />
   <link rel="manifest" href="manifest.json" />
-  <link rel="stylesheet" href="css/style.css?v=15" />
+  <link rel="stylesheet" href="css/style.css?v=16" />
 </head>
 <body>
   <div id="bg-deco" aria-hidden="true"></div>
@@ -20,6 +20,7 @@
       <h1>NCT DREAM <em>连连看</em></h1>
       <p class="slogan" id="menu-slogan">连接相同的少年卡片 · We dream, we match!</p>
       <div class="menu-avatars" id="menu-avatars"></div>
+      <p class="bias-hint" id="bias-hint">点击头像，选择你的本命 💖</p>
     </div>
     <div class="menu-buttons">
       <button id="btn-classic" class="btn big primary">🚀 开始闯关</button>
@@ -49,6 +50,7 @@
         </div>
       </div>
       <div class="hud-right">
+        <div id="hud-bias" class="hud-bias" title="本命"></div>
         <div class="pill"><span id="hud-score-label">得分</span> <b id="hud-score">0</b></div>
         <div class="pill combo-pill"><span id="hud-combo-label">连击</span> <b id="hud-combo">x0</b></div>
         <button id="btn-sound" class="icon-btn" title="音效开关">🔊</button>
@@ -79,10 +81,10 @@
   <div id="toast" class="hidden" role="status" aria-live="polite"></div>
   <canvas id="confetti"></canvas>
 
-  <script src="js/data.js?v=15"></script>
-  <script src="js/audio.js?v=15"></script>
-  <script src="js/game.js?v=15"></script>
-  <script src="js/ui.js?v=15"></script>
-  <script src="js/main.js?v=15"></script>
+  <script src="js/data.js?v=16"></script>
+  <script src="js/audio.js?v=16"></script>
+  <script src="js/game.js?v=16"></script>
+  <script src="js/ui.js?v=16"></script>
+  <script src="js/main.js?v=16"></script>
 </body>
 </html>

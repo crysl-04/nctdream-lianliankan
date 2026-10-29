@@ -145,7 +145,8 @@ const ACHIEVEMENTS = [
   { id: 'marathon',   name: '耐力赛',     desc: '单局用时超过 10 分钟',    icon: '⏳' },
   { id: 'night_owl',  name: '夜猫子',     desc: '在凌晨 0-5 点完成一局',   icon: '🦉' },
   { id: 'wardrobe7',  name: '时装周',     desc: '收集 7 套装扮',           icon: '👗' },
-  { id: 'wardrobe14', name: '全能收藏家', desc: '收集全部 14 套装扮',      icon: '💎' }
+  { id: 'wardrobe14', name: '全能收藏家', desc: '收集全部 14 套装扮',      icon: '💎' },
+  { id: 'bias_power', name: '本命力量',   desc: '单局与本命配对消除 5 次',  icon: '💖' }
 ];
 
 /* ---------- 多语言（中/英） ---------- */
@@ -194,6 +195,7 @@ const I18N = {
     howtoKeys: '⌨️ 键盘：方向键移动 · 空格选中 · H 提示 · Esc 取消',
     collection: '👔 装扮图鉴', collectionTitle: '装扮图鉴', collectionNew: '🎨 新装扮解锁！',
     collectionTip: '通关对应关卡即可解锁装扮，通关全部 14 关收集整套！',
+    biasHint: '点击头像，选择你的本命 💖', biasSet: '💖 本命锁定：{s}', biasLine: '💖 本命 {s}',
     exitTitle: '确定要退出吗？', exitSub: '当前进度不会保存', exitYes: '退出 🏠', exitNo: '继续游戏 ▶',
     difficulty: '难度', difficultyNormal: '🙂 普通', difficultyHard: '🔥 困难',
     hardMode: '困难闯关', hardBonus: '🔥 困难加成 ×1.5 分',
@@ -245,6 +247,7 @@ const I18N = {
     howtoKeys: '⌨️ Keyboard: arrows to move · Space to select · H for hint · Esc to cancel',
     collection: '👔 Wardrobe', collectionTitle: 'Costume Wardrobe', collectionNew: '🎨 New outfit unlocked!',
     collectionTip: 'Clear a level to unlock its outfit — collect all 14!',
+    biasHint: 'Tap an avatar to choose your bias 💖', biasSet: '💖 Bias locked: {s}', biasLine: '💖 Bias {s}',
     exitTitle: 'Leave this game?', exitSub: 'Current progress will not be saved', exitYes: 'Leave 🏠', exitNo: 'Keep Playing ▶',
     difficulty: 'Difficulty', difficultyNormal: '🙂 Normal', difficultyHard: '🔥 Hard',
     hardMode: 'Hard Classic', hardBonus: '🔥 Hard bonus ×1.5 score',
@@ -303,7 +306,8 @@ const ACHIEVEMENTS_EN = {
   marathon:   { name: 'Marathon',       desc: 'A single game longer than 10 minutes' },
   night_owl:  { name: 'Night Owl',      desc: 'Finish a game between 0-5 AM' },
   wardrobe7:  { name: 'Fashion Week',   desc: 'Collect 7 outfits' },
-  wardrobe14: { name: 'Ultimate Collector', desc: 'Collect all 14 outfits' }
+  wardrobe14: { name: 'Ultimate Collector', desc: 'Collect all 14 outfits' },
+  bias_power: { name: 'Bias Power',     desc: 'Match your bias 5 times in one game' }
 };
 function achName(a) {
   const lang = (typeof Save !== 'undefined' && Save.data && Save.data.settings && Save.data.settings.lang) || 'zh';
